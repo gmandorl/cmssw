@@ -87,21 +87,19 @@ void pat::PackedCandidate::packCovariance(bool unpackAfterwards){
      {
         covarianceVersion_=1; //assume Phase1 default covariance
      }
-
+    packedCovariance_.dptdpt = covarianceParameterization().pack(....);
+    
    //unpack afterwards
    if(unpackAfterwards) unpackParameterizedCovariance();
 }
 
 void pat::PackedCandidate::unpackParameterizedCovariance() const {
-    
-    if(covarianceParameterization == 0) 
-      { 
-        //Open via file in path
-      }
-    if(covarianceParameterization)
+ 
+    const CovarianceParameterization & p=covarianceParameterization()
+    if(p.isValid()) 
     {
-      //m_=covarianceParameterization->covarianceMatrix(/*args here*/);    
-      //
+      m_(0,0)=covarianceParameterization().meanValue(0,0,....) * packedCovariance_.dptdpt;
+      //.... 
     } else {
   throw edm::Exception(edm::errors::UnimplementedFeature)
      << "You do not have a valid track parameters file loaded. "
