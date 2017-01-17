@@ -6,7 +6,7 @@
 #include <iostream>
 void CovarianceParameterization::load(int version)
 {
- edm::FileInPath fip((boost::format("PhysicsTools/PatAlgos/data/CovarianceParameterization_version%d.root") % version).str());
+ edm::FileInPath fip((boost::format("DataFormats/PatCandidates/data/CovarianceParameterization_version%d.root") % version).str());
  std::cout << "Hello there, I'm going to load " <<  fip.fullPath().c_str() << std::endl;
  TFile fileToRead(fip.fullPath().c_str());
 //Read files from here fip.fullPath().c_str();
