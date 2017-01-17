@@ -231,6 +231,8 @@ void pat::PATPackedCandidateProducer::produce(edm::StreamID, edm::Event& iEvent,
           if(outPtrP->back().pt() > minPtForTrackProperties_ || whiteList.find(ic)!=whiteList.end()) {
             outPtrP->back().setTrackProperties(*ctrack);
             //outPtrP->back().setTrackProperties(*ctrack,tsos.curvilinearError());
+          } else {
+            outPtrP->back().setTrackHits(*ctrack);
           }
 
           // these things are always for the CKF track

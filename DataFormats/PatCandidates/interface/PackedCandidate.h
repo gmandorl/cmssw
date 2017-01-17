@@ -15,6 +15,7 @@
 
 //forward declare testing structure
 class testPackedCandidate;
+class CovarianceParameterization;
 
 namespace pat {
   class PackedCandidate : public reco::Candidate {
@@ -50,9 +51,7 @@ namespace pat {
       p4_(new PolarLorentzVector(0,0,0,0)), p4c_( new LorentzVector(0,0,0,0)), 
       vertex_(new Point(0,0,0)), dphi_(0), track_(nullptr), pdgId_(0),
       qualityFlags_(0), pvRefKey_(reco::VertexRef::invalidKey()),
-      dxydxy_(0),
-      dzdz_(0),dxydz_(0),dlambdadz_(0), dphidxy_(0),dptdpt_(0),detadeta_(0),
-      dphidphi_(0), packedHits_(0), packedLayers_(0), normalizedChi2_(0) { }
+      m_() packedHits_(0), packedLayers_(0), normalizedChi2_(0) { }
 
     explicit PackedCandidate( const reco::Candidate & c,
                               const reco::VertexRefProd &pvRefProd,
@@ -61,8 +60,7 @@ namespace pat {
       p4_( new PolarLorentzVector(c.pt(), c.eta(), c.phi(), c.mass())), 
       p4c_( new LorentzVector(*p4_)), vertex_( new Point(c.vertex())), dphi_(0), 
       track_(nullptr), pdgId_(c.pdgId()), qualityFlags_(0), pvRefProd_(pvRefProd),
-      pvRefKey_(pvRefKey),dxydxy_(0),dzdz_(0),dxydz_(0), dlambdadz_(0),
-      dphidxy_(0),dptdpt_(0), detadeta_(0),dphidphi_(0), packedHits_(0), packedLayers_(0),
+      pvRefKey_(pvRefKey),m_(), packedHits_(0), packedLayers_(0),
       normalizedChi2_(0) {
       packBoth();
     }
@@ -76,8 +74,7 @@ namespace pat {
       vertex_( new Point(vtx) ), dphi_(reco::deltaPhi(phiAtVtx,p4_.load()->phi())), 
       track_(nullptr), pdgId_(pdgId),
       qualityFlags_(0), pvRefProd_(pvRefProd), pvRefKey_(pvRefKey),
-            dxydxy_(0),dzdz_(0),dxydz_(0),dlambdadz_(0),dphidxy_(0),dptdpt_(0),
-      detadeta_(0),dphidphi_(0),packedHits_(0),packedLayers_(0),normalizedChi2_(0) {
+      m_(),packedHits_(0), packedLayers_(0),normalizedChi2_(0) {
       packBoth();
     }
 
@@ -91,9 +88,7 @@ namespace pat {
       dphi_(reco::deltaPhi(phiAtVtx,p4_.load()->phi())), 
       track_(nullptr), pdgId_(pdgId), qualityFlags_(0),
       pvRefProd_(pvRefProd), pvRefKey_(pvRefKey),
-      dxydxy_(0),dzdz_(0),dxydz_(0),
-      dlambdadz_(0),dphidxy_(0),dptdpt_(0), detadeta_(0),dphidphi_(0),
-      packedHits_(0),packedLayers_(0),normalizedChi2_(0) {
+      m_(),packedHits_(0),packedLayers_(0),normalizedChi2_(0) {
       packBoth();
     }
 
@@ -118,9 +113,8 @@ namespace pat {
       track_( iOther.track_ ? new reco::Track(*iOther.track_) : nullptr),
       pdgId_(iOther.pdgId_), qualityFlags_(iOther.qualityFlags_), 
       pvRefProd_(iOther.pvRefProd_),pvRefKey_(iOther.pvRefKey_),
-      dxydxy_(iOther.dxydxy_),dzdz_(iOther.dzdz_),dxydz_(iOther.dxydz_), dlambdadz_(iOther.dlambdadz_),
-      dphidxy_(iOther.dphidxy_),dptdpt_(iOther.dptdpt_), detadeta_(iOther.detadeta_),
-      dphidphi_(iOther.dphidphi_), packedHits_(iOther.packedHits_), packedLayers_(iOther.packedLayers_), normalizedChi2_(iOther.normalizedChi2_) {
+      m_(iOther.m_),
+      packedHits_(iOther.packedHits_),packedLayers_(iOther.packedLayers_),  normalizedChi2_(iOther.normalizedChi2_) {
       }
 
     PackedCandidate( PackedCandidate&& iOther) :
@@ -143,9 +137,8 @@ namespace pat {
       track_( iOther.track_.exchange(nullptr) ),
       pdgId_(iOther.pdgId_), qualityFlags_(iOther.qualityFlags_), 
       pvRefProd_(std::move(iOther.pvRefProd_)),pvRefKey_(iOther.pvRefKey_),
-      dxydxy_(iOther.dxydxy_),dzdz_(iOther.dzdz_),dxydz_(iOther.dxydz_), dlambdadz_(iOther.dlambdadz_),
-      dphidxy_(iOther.dphidxy_),dptdpt_(iOther.dptdpt_), detadeta_(iOther.detadeta_),
-      dphidphi_(iOther.dphidphi_), packedHits_(iOther.packedHits_), packedLayers_(iOther.packedLayers_), normalizedChi2_(iOther.normalizedChi2_) {
+      m_(iOther.m_),
+      packedHits_(iOther.packedHits_), packedLayers_(iOther.packedLayers_),normalizedChi2_(iOther.normalizedChi2_) {
       }
 
 
@@ -205,14 +198,7 @@ namespace pat {
       qualityFlags_=iOther.qualityFlags_; 
       pvRefProd_=iOther.pvRefProd_;
       pvRefKey_=iOther.pvRefKey_;
-      dxydxy_=iOther.dxydxy_;
-      dzdz_=iOther.dzdz_;
-      dxydz_=iOther.dxydz_; 
-      dlambdadz_=iOther.dlambdadz_;
-      dphidxy_=iOther.dphidxy_;
-      dptdpt_=iOther.dptdpt_; 
-      detadeta_=iOther.detadeta_;
-      dphidphi_=iOther.dphidphi_; 
+      m_=iOther.m_;
       packedHits_=iOther.packedHits_; 
       packedLayers_=iOther.packedLayers_; 
       normalizedChi2_=iOther.normalizedChi2_;
@@ -252,14 +238,7 @@ namespace pat {
       qualityFlags_=iOther.qualityFlags_; 
       pvRefProd_=iOther.pvRefProd_;
       pvRefKey_=iOther.pvRefKey_;
-      dxydxy_=iOther.dxydxy_;
-      dzdz_=iOther.dzdz_;
-      dxydz_=iOther.dxydz_; 
-      dlambdadz_=iOther.dlambdadz_;
-      dphidxy_=iOther.dphidxy_;
-      dptdpt_=iOther.dptdpt_; 
-      detadeta_=iOther.detadeta_;
-      dphidphi_=iOther.dphidphi_; 
+      m_=iOther.m_;
       packedHits_=iOther.packedHits_; 
       packedLayers_=iOther.packedLayers_; 
       normalizedChi2_=iOther.normalizedChi2_;
@@ -391,17 +370,7 @@ namespace pat {
       trackPixelHitsMask = 7,
       trackStripHitsMask = 31, trackStripHitsShift = 3
     };
-    virtual void setTrackProperties( const reco::Track & tk, const reco::Track::CovarianceMatrix & covariance) {
-      dxydxy_ = covariance(3,3);
-      dxydz_ = covariance(3,4);
-      dzdz_ = covariance(4,4);
-      dphidxy_ = covariance(2,3);
-      dlambdadz_ = covariance(1,4);
-      dptdpt_ = covariance(0,0)*pt()*pt();
-      detadeta_ = covariance(1,1);
-      dphidphi_ = covariance(2,2)*pt()*pt();
-
-      normalizedChi2_ = tk.normalizedChi2();
+    virtual void setHits( const reco::Track & tk) {
       // first we count the number of layers with hits
       int numberOfPixelLayers_ = tk.hitPattern().pixelLayersWithMeasurement();
       if (numberOfPixelLayers_ > trackPixelHitsMask) numberOfPixelLayers_ = trackPixelHitsMask;
@@ -413,11 +382,24 @@ namespace pat {
       if (numberOfPixelHits_ > trackPixelHitsMask) numberOfPixelHits_ = trackPixelHitsMask;
       int numberOfStripHits_ = tk.hitPattern().numberOfValidHits() - numberOfPixelHits_ - numberOfPixelLayers_ - numberOfStripLayers_;
       if (numberOfStripHits_ > trackStripHitsMask) numberOfStripHits_ = trackStripHitsMask;
+
       packedHits_ = (numberOfPixelHits_&trackPixelHitsMask) | (numberOfStripHits_ << trackStripHitsShift);
- 
+    }
+  
+    virtual void setTrackProperties( const reco::Track & tk, const reco::Track::CovarianceMatrix & covariance,int covarianceVersion = 1) {
+      covarianceVersion_ = covarianceVersion;
+      m_ = covariance;
+      normalizedChi2_ = tk.normalizedChi2();
+      //
+      setHits(tk); //tk.hitPattern().numberOfValidPixelHits(),tk.hitPattern().numberOfValidHits());
       packBoth();
+      packCovariance(false); //TODO: check if these 2 lines make sense as the m_ is protected behind the Track atomic pointer...
+      unpackTrk();         // 
     }
 
+    virtual void setTrackHits( const reco::Track & tk ) {
+	setHits(tk.hitPattern().numberOfValidPixelHits(),tk.hitPattern().numberOfValidHits());
+    }	
     virtual void setTrackProperties( const reco::Track & tk ) {
 	setTrackProperties(tk,tk.covariance());
     }	
@@ -427,6 +409,9 @@ namespace pat {
     int pixelLayersWithMeasurement() const { return packedLayers_ & trackPixelHitsMask; }
     int stripLayersWithMeasurement() const { return (packedLayers_ >> trackStripHitsShift); }
     int trackerLayersWithMeasurement() const { return stripLayersWithMeasurement() + pixelLayersWithMeasurement(); }
+    virtual void setCovarianceVersiont(int v) {covarianceVersion_=v;}
+    int covarianceVersion() const { return covarianceVersion_;}
+
 	
     /// vertex position
     virtual const Point & vertex() const { maybeUnpackBoth(); return *vertex_; }//{ if (fromPV_) return Point(0,0,0); else return Point(0,0,100); }
@@ -470,9 +455,9 @@ namespace pat {
     virtual float dz(const Point &p)  const ;
 
     /// uncertainty on dz 
-    virtual float dzError() const { maybeUnpackBoth(); return sqrt(dzdz_); }
+    virtual float dzError() const { maybeUnpackTrack(); return sqrt(m_(4,4)); }
     /// uncertainty on dxy
-    virtual float dxyError() const { maybeUnpackBoth(); return sqrt(dxydxy_); }
+    virtual float dxyError() const { maybeUnpackTrack(); return sqrt(m_(3,3)); }
 
 
     /// Return reference to a pseudo track made with candidate kinematics, parameterized error for eta,phi,pt and full IP covariance	
@@ -481,7 +466,7 @@ namespace pat {
     /// return a pointer to the track if present. otherwise, return a null pointer
     virtual const reco::Track * bestTrack() const {
       if (packedHits_!=0 || packedLayers_ !=0) {
-        if (!track_) unpackTrk();
+        maybeUnpackTrack();
         return track_.load();
       }
       else
@@ -607,7 +592,11 @@ namespace pat {
     void unpack() const ;
     void packVtx(bool unpackAfterwards=true) ;
     void unpackVtx() const ;
+    void packCovariance(bool unpackAfterwards=true) ;
+    void legacyCovarianceUnpacking() const;
+    void unpackParameterizedCovariance() const;
     void maybeUnpackBoth() const { if (!p4c_) unpack(); if (!vertex_) unpackVtx(); }
+    void maybeUnpackTrack() const { if (!track_) unpackTrk(); }
     void packBoth() { pack(false); packVtx(false); delete p4_.exchange(nullptr); delete p4c_.exchange(nullptr); delete vertex_.exchange(nullptr); unpack(); unpackVtx(); } // do it this way, so that we don't loose precision on the angles before computing dxy,dz
     void unpackTrk() const ;
 
@@ -631,13 +620,14 @@ namespace pat {
     reco::VertexRef::key_type pvRefKey_;
 
     /// IP covariance	
-    CMS_THREAD_GUARD(vertex_) mutable float dxydxy_, dzdz_, dxydz_,dlambdadz_,dphidxy_,dptdpt_,detadeta_,dphidphi_;
     uint8_t packedHits_, packedLayers_; // packedLayers_ -> layers with valid hits; packedHits_ -> extra hits beyond the one-per-layer implied by packedLayers_
+    CMS_THREAD_GUARD(vertex_) mutable reco::TrackBase::CovarianceMatrix m_;
     /// track quality information
     uint8_t normalizedChi2_; 
 //    uint8_t numberOfPixelHits_;
   //  uint8_t numberOfHits_;
-    
+    int covarianceVersion_;
+    static CovarianceParameterization * covarianceParameterization ;
     /// check overlap with another Candidate                                              
     virtual bool overlap( const reco::Candidate & ) const;
     template<typename, typename, typename> friend struct component;
