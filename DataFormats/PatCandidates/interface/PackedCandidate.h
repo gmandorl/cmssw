@@ -39,20 +39,14 @@ namespace pat {
       packedPt_(0), packedEta_(0),
       packedPhi_(0), packedM_(0),
       packedDxy_(0), packedDz_(0), packedDPhi_(0),
-      packedCovarianceDxyDxy_(0),packedCovarianceDxyDz_(0),
-      packedCovarianceDzDz_(0),
-      packedCovarianceDlambdaDz_(0),
-      packedCovarianceDphiDxy_(0),
-      packedCovarianceDptDpt_(0),
-      packedCovarianceDetaDeta_(0),
-      packedCovarianceDphiDphi_(0),
+      packedCovariance_(),
       packedPuppiweight_(0),
       packedPuppiweightNoLepDiff_(0),
       hcalFraction_(0),
       p4_(new PolarLorentzVector(0,0,0,0)), p4c_( new LorentzVector(0,0,0,0)), 
       vertex_(new Point(0,0,0)), dphi_(0), track_(nullptr), pdgId_(0),
       qualityFlags_(0), pvRefKey_(reco::VertexRef::invalidKey()),
-      m_() packedHits_(0), packedLayers_(0), normalizedChi2_(0) { }
+      m_(), packedHits_(0), packedLayers_(0), normalizedChi2_(0) { }
 
     explicit PackedCandidate( const reco::Candidate & c,
                               const reco::VertexRefProd &pvRefProd,
@@ -97,13 +91,7 @@ namespace pat {
       packedPt_(iOther.packedPt_), packedEta_(iOther.packedEta_),
       packedPhi_(iOther.packedPhi_), packedM_(iOther.packedM_),
       packedDxy_(iOther.packedDxy_), packedDz_(iOther.packedDz_), packedDPhi_(iOther.packedDPhi_),
-      packedCovarianceDxyDxy_(iOther.packedCovarianceDxyDxy_),packedCovarianceDxyDz_(iOther.packedCovarianceDxyDz_),
-      packedCovarianceDzDz_(iOther.packedCovarianceDzDz_),
-      packedCovarianceDlambdaDz_(iOther.packedCovarianceDlambdaDz_),
-      packedCovarianceDphiDxy_(iOther.packedCovarianceDphiDxy_),
-      packedCovarianceDptDpt_(iOther.packedCovarianceDptDpt_),
-      packedCovarianceDetaDeta_(iOther.packedCovarianceDetaDeta_),
-      packedCovarianceDphiDphi_(iOther.packedCovarianceDphiDphi_),
+      packedCovariance_(iOther.packedCovariance_),
       packedPuppiweight_(iOther.packedPuppiweight_), 
       packedPuppiweightNoLepDiff_(iOther.packedPuppiweightNoLepDiff_),
       hcalFraction_(iOther.hcalFraction_),
@@ -122,13 +110,7 @@ namespace pat {
       packedPt_(iOther.packedPt_), packedEta_(iOther.packedEta_),
       packedPhi_(iOther.packedPhi_), packedM_(iOther.packedM_),
       packedDxy_(iOther.packedDxy_), packedDz_(iOther.packedDz_), packedDPhi_(iOther.packedDPhi_),
-      packedCovarianceDxyDxy_(iOther.packedCovarianceDxyDxy_),packedCovarianceDxyDz_(iOther.packedCovarianceDxyDz_),
-      packedCovarianceDzDz_(iOther.packedCovarianceDzDz_),
-      packedCovarianceDlambdaDz_(iOther.packedCovarianceDlambdaDz_),
-      packedCovarianceDphiDxy_(iOther.packedCovarianceDphiDxy_),
-      packedCovarianceDptDpt_(iOther.packedCovarianceDptDpt_),
-      packedCovarianceDetaDeta_(iOther.packedCovarianceDetaDeta_),
-      packedCovarianceDphiDphi_(iOther.packedCovarianceDphiDphi_),
+      packedCovariance_(iOther.packedCovariance_),
       packedPuppiweight_(iOther.packedPuppiweight_), 
       packedPuppiweightNoLepDiff_(iOther.packedPuppiweightNoLepDiff_),
       hcalFraction_(iOther.hcalFraction_),
@@ -154,14 +136,7 @@ namespace pat {
       packedDxy_=iOther.packedDxy_; 
       packedDz_=iOther.packedDz_; 
       packedDPhi_=iOther.packedDPhi_;
-      packedCovarianceDxyDxy_=iOther.packedCovarianceDxyDxy_;
-      packedCovarianceDxyDz_=iOther.packedCovarianceDxyDz_;
-      packedCovarianceDzDz_=iOther.packedCovarianceDzDz_;
-      packedCovarianceDlambdaDz_=iOther.packedCovarianceDlambdaDz_;
-      packedCovarianceDphiDxy_=iOther.packedCovarianceDphiDxy_;
-      packedCovarianceDptDpt_=iOther.packedCovarianceDptDpt_;
-      packedCovarianceDetaDeta_=iOther.packedCovarianceDetaDeta_;
-      packedCovarianceDphiDphi_=iOther.packedCovarianceDphiDphi_;
+      packedCovariance_=iOther.packedCovariance_;
       packedPuppiweight_=iOther.packedPuppiweight_; 
       packedPuppiweightNoLepDiff_=iOther.packedPuppiweightNoLepDiff_;
       hcalFraction_=iOther.hcalFraction_;
@@ -217,14 +192,7 @@ namespace pat {
       packedDxy_=iOther.packedDxy_; 
       packedDz_=iOther.packedDz_; 
       packedDPhi_=iOther.packedDPhi_;
-      packedCovarianceDxyDxy_=iOther.packedCovarianceDxyDxy_;
-      packedCovarianceDxyDz_=iOther.packedCovarianceDxyDz_;
-      packedCovarianceDzDz_=iOther.packedCovarianceDzDz_;
-      packedCovarianceDlambdaDz_=iOther.packedCovarianceDlambdaDz_;
-      packedCovarianceDphiDxy_=iOther.packedCovarianceDphiDxy_;
-      packedCovarianceDptDpt_=iOther.packedCovarianceDptDpt_;
-      packedCovarianceDetaDeta_=iOther.packedCovarianceDetaDeta_;
-      packedCovarianceDphiDphi_=iOther.packedCovarianceDphiDphi_;
+      packedCovariance_=iOther.packedCovariance_;
       packedPuppiweight_=iOther.packedPuppiweight_; 
       packedPuppiweightNoLepDiff_=iOther.packedPuppiweightNoLepDiff_;
       hcalFraction_=iOther.hcalFraction_;
@@ -387,22 +355,22 @@ namespace pat {
       packedHits_ = (numberOfPixelHits_&trackPixelHitsMask) | (numberOfStripHits_ << trackStripHitsShift);
     }
   
-    virtual void setTrackProperties( const reco::Track & tk, const reco::Track::CovarianceMatrix & covariance,int covarianceVersion = 1) {
+    virtual void setTrackProperties( const reco::Track & tk, const reco::Track::CovarianceMatrix & covariance,int quality,int covarianceVersion = 1) {
       covarianceVersion_ = covarianceVersion;
       m_ = covariance;
       normalizedChi2_ = tk.normalizedChi2();
       //
       setHits(tk); //tk.hitPattern().numberOfValidPixelHits(),tk.hitPattern().numberOfValidHits());
       packBoth();
-      packCovariance(false); //TODO: check if these 2 lines make sense as the m_ is protected behind the Track atomic pointer...
+      packCovariance(quality,false); //TODO: check if these 2 lines make sense as the m_ is protected behind the Track atomic pointer...
       unpackTrk();         // 
     }
 
     virtual void setTrackHits( const reco::Track & tk ) {
-	setHits(tk.hitPattern().numberOfValidPixelHits(),tk.hitPattern().numberOfValidHits());
+	setHits(tk);
     }	
-    virtual void setTrackProperties( const reco::Track & tk ) {
-	setTrackProperties(tk,tk.covariance());
+    virtual void setTrackProperties( const reco::Track & tk,int quality ) {
+	setTrackProperties(tk,tk.covariance(), quality);
     }	
  
     int numberOfPixelHits() const { return (packedHits_ & trackPixelHitsMask) + pixelLayersWithMeasurement(); }
@@ -581,6 +549,7 @@ namespace pat {
     float hcalFraction() const { return (hcalFraction_/100.); }    /// Fraction of Ecal and Hcal for HF and neutral hadrons
     
     struct PackedCovariance {
+        PackedCovariance(): dxydxy(0),dxydz(0),dzdz(0),dlambdadz(0),dphidxy(0),dptdpt(0),detadeta(0),dphidphi(0) {}
         //3D IP covariance
         float dxydxy;
         float dxydz;
@@ -605,7 +574,7 @@ namespace pat {
     void unpack() const ;
     void packVtx(bool unpackAfterwards=true) ;
     void unpackVtx() const ;
-    void packCovariance(bool unpackAfterwards=true) ;
+    void packCovariance(int quality,bool unpackAfterwards=true) ;
     void unpackParameterizedCovariance() const;
     void maybeUnpackBoth() const { if (!p4c_) unpack(); if (!vertex_) unpackVtx(); }
     void maybeUnpackTrack() const { if (!track_) unpackTrk(); }
@@ -632,14 +601,14 @@ namespace pat {
     reco::VertexRef::key_type pvRefKey_;
 
     /// IP covariance	
-    uint8_t packedHits_, packedLayers_; // packedLayers_ -> layers with valid hits; packedHits_ -> extra hits beyond the one-per-layer implied by packedLayers_
     CMS_THREAD_GUARD(vertex_) mutable reco::TrackBase::CovarianceMatrix m_;
+    uint8_t packedHits_, packedLayers_; // packedLayers_ -> layers with valid hits; packedHits_ -> extra hits beyond the one-per-layer implied by packedLayers_
     
     /// track quality information
     uint8_t normalizedChi2_; 
     int covarianceVersion_;
-    static mutable CovarianceParameterization covarianceParameterization_;
-    const CovarianceParameterization & covarianceParameterization() {
+    static CovarianceParameterization covarianceParameterization_;
+    const CovarianceParameterization & covarianceParameterization() const {
         if(covarianceParameterization_.loadedVersion() != covarianceVersion_)
         {
           covarianceParameterization_.load(covarianceVersion_); 

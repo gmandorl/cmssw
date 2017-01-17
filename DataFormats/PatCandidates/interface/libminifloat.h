@@ -47,8 +47,7 @@ class MiniFloatConverter {
         }
         inline static float reduceMantissaToNbits(const float &f, int bits)
         {
-            static_assert(bits <= 23,"max mantissa size is 23 bits");
-            constexpr uint32_t mask = (0xFFFFFFFF >> (23-bits)) << (23-bits);
+            uint32_t mask = (0xFFFFFFFF >> (23-bits)) << (23-bits);
             union { float flt; uint32_t i32; } conv;
             conv.flt=f;
             conv.i32&=mask;

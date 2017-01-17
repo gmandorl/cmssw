@@ -6,7 +6,7 @@
 
 #include "DataFormats/PatCandidates/interface/liblogintpack.h"
 using namespace logintpack;
-CovarianceParameterization *  pat::PackedCandidate::covarianceParameterization = 0;
+CovarianceParameterization  pat::PackedCandidate::covarianceParameterization_=CovarianceParameterization();
 
 void pat::PackedCandidate::pack(bool unpackAfterwards) {
     packedPt_  =  MiniFloatConverter::float32to16(p4_.load()->Pt());
@@ -80,14 +80,14 @@ void pat::PackedCandidate::unpack() const {
 
 }*/
 
-void pat::PackedCandidate::packCovariance(bool unpackAfterwards){
+void pat::PackedCandidate::packCovariance(int quality,bool unpackAfterwards){
    //TODO: implement here the packing around 
    // mean values in fewer bits
    if(covarianceVersion_  == 0) 
      {
         covarianceVersion_=1; //assume Phase1 default covariance
      }
-    packedCovariance_.dptdpt = covarianceParameterization().pack(....);
+    packedCovariance_.dptdpt = covarianceParameterization().packed(m_(0,0),0,0,quality,pt(),eta(),numberOfHits(), numberOfPixelHits());
     
    //unpack afterwards
    if(unpackAfterwards) unpackParameterizedCovariance();
@@ -95,10 +95,11 @@ void pat::PackedCandidate::packCovariance(bool unpackAfterwards){
 
 void pat::PackedCandidate::unpackParameterizedCovariance() const {
  
-    const CovarianceParameterization & p=covarianceParameterization()
+    const CovarianceParameterization & p=covarianceParameterization();
     if(p.isValid()) 
     {
-      m_(0,0)=covarianceParameterization().meanValue(0,0,....) * packedCovariance_.dptdpt;
+      m_(0,0)=covarianceParameterization().meanValue(0,0,copysign(1.,packedCovariance_.dptdpt), pt(), eta(), numberOfHits(), numberOfPixelHits()) * packedCovariance_.dptdpt;
+      
       //.... 
     } else {
   throw edm::Exception(edm::errors::UnimplementedFeature)
@@ -149,12 +150,7 @@ float pat::PackedCandidate::dz(const Point &p) const {
 
 void pat::PackedCandidate::unpackTrk() const {
     maybeUnpackBoth();
-
-    if(covarianceVersion_==0) { //Backward compatible behaviour
-	legacyCovarianceUnpacking();
-    } else {
-	unpackParameterizedCovariance();
-    }
+    unpackParameterizedCovariance();
 
     math::RhoEtaPhiVector p3(p4_.load()->pt(),p4_.load()->eta(),phiAtVtx());
     int numberOfStripLayers = stripLayersWithMeasurement(), numberOfPixelLayers = pixelLayersWithMeasurement();
