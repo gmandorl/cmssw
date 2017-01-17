@@ -10,6 +10,7 @@
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/Math/interface/deltaPhi.h" 
 #include "FWCore/Utilities/interface/thread_safety_macros.h"
+#include "DataFormats/PatCandidates/interface/CovarianceParameterization.h"
 
 /* #include "DataFormats/Math/interface/PtEtaPhiMass.h" */
 
@@ -578,22 +579,33 @@ namespace pat {
     // for teh neutral fraction
     void setHcalFraction(float p);                      /// Set the fraction of Ecal and Hcal needed for HF and neutral hadrons
     float hcalFraction() const { return (hcalFraction_/100.); }    /// Fraction of Ecal and Hcal for HF and neutral hadrons
-
+    
+    struct PackedCovariance {
+        //3D IP covariance
+        float dxydxy;
+        float dxydz;
+        float dzdz;
+        //other IP relevant elements
+        float dlambdadz;
+        float dphidxy;
+        //other diag elements
+        float dptdpt;
+        float detadeta;
+        float dphidphi;
+    };
 
   protected:
     friend class ::testPackedCandidate;
 
     uint16_t packedPt_, packedEta_, packedPhi_, packedM_;
     uint16_t packedDxy_, packedDz_, packedDPhi_;
-    uint16_t packedCovarianceDxyDxy_,packedCovarianceDxyDz_,packedCovarianceDzDz_;
-    int8_t packedCovarianceDlambdaDz_,packedCovarianceDphiDxy_;
-    int8_t packedCovarianceDptDpt_,packedCovarianceDetaDeta_,packedCovarianceDphiDphi_;
+    PackedCovariance packedCovariance_;
+
     void pack(bool unpackAfterwards=true) ;
     void unpack() const ;
     void packVtx(bool unpackAfterwards=true) ;
     void unpackVtx() const ;
     void packCovariance(bool unpackAfterwards=true) ;
-    void legacyCovarianceUnpacking() const;
     void unpackParameterizedCovariance() const;
     void maybeUnpackBoth() const { if (!p4c_) unpack(); if (!vertex_) unpackVtx(); }
     void maybeUnpackTrack() const { if (!track_) unpackTrk(); }
@@ -622,12 +634,18 @@ namespace pat {
     /// IP covariance	
     uint8_t packedHits_, packedLayers_; // packedLayers_ -> layers with valid hits; packedHits_ -> extra hits beyond the one-per-layer implied by packedLayers_
     CMS_THREAD_GUARD(vertex_) mutable reco::TrackBase::CovarianceMatrix m_;
+    
     /// track quality information
     uint8_t normalizedChi2_; 
-//    uint8_t numberOfPixelHits_;
-  //  uint8_t numberOfHits_;
     int covarianceVersion_;
-    static CovarianceParameterization * covarianceParameterization ;
+    static mutable CovarianceParameterization covarianceParameterization_;
+    const CovarianceParameterization & covarianceParameterization() {
+        if(covarianceParameterization_.loadedVersion() != covarianceVersion_)
+        {
+          covarianceParameterization_.load(covarianceVersion_); 
+        }
+        return  covarianceParameterization_;
+    }
     /// check overlap with another Candidate                                              
     virtual bool overlap( const reco::Candidate & ) const;
     template<typename, typename, typename> friend struct component;

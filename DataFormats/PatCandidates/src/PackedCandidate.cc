@@ -64,7 +64,7 @@ void pat::PackedCandidate::unpack() const {
     }
 }
 
-void pat::PackedCandidate::legacyCovarianceUnpacking() const {
+/*void pat::PackedCandidate::legacyCovarianceUnpacking() const {
 
     m_(0,0)=unpack8log(packedCovarianceDptDpt_,-15,0)/pt()/pt(); //TODO: tune
     m_(1,1)=unpack8log(packedCovarianceDetaDeta_,-20,-5);
@@ -78,7 +78,7 @@ void pat::PackedCandidate::legacyCovarianceUnpacking() const {
     m_(4,3)=m_(3,4);
     m_(4,4)=MiniFloatConverter::float16to32(packedCovarianceDzDz_)/10000.;
 
-}
+}*/
 
 void pat::PackedCandidate::packCovariance(bool unpackAfterwards){
    //TODO: implement here the packing around 
