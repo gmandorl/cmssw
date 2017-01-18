@@ -15,20 +15,32 @@ void CovarianceParameterization::load(int version)
      fileToRead.Close();
  //Those can be loaded from the root file too in priciple
  //    for(int i=0;i<150;i++) bits_[i]=0;
-     bits_[0][0][0]=2;
-     bits_[1][1][0]=2;
-     bits_[2][2][0]=2;
-     bits_[3][3][0]=10;
-     bits_[4][4][0]=10;
-     bits_[3][4][0]=10;
+     bits_[0][0][2]=2;
+     bits_[1][1][2]=2;
+     bits_[2][2][2]=2;
+     bits_[3][3][2]=12;
+     bits_[4][4][2]=12;
+     bits_[3][4][2]=12;
 
-     bits_[0][0][1]=0;
-     bits_[1][1][2]=0;
-     bits_[2][2][3]=0;
-     bits_[3][3][4]=4;
-     bits_[4][4][5]=4;
+     bits_[0][0][6]=0;
+     bits_[1][1][6]=0;
+     bits_[2][2][6]=0;
+     bits_[3][3][6]=4;
+     bits_[4][4][6]=4;
      bits_[3][4][6]=4;
-     loadedVersion_=version; 
+
+/*
+ *
+0 12  3 3
+1 12  2 3
+2 12  2 2
+3 10  2 5
+4 10  2 4
+5 6 0 2
+6 4 0 2
+7 6 0 0
+ */ 
+    loadedVersion_=version; 
      std::cerr << "Loaded version " << loadedVersion_ << " " << version << " " << loadedVersion() << std::endl;
  } else {loadedVersion_=-1;}
 
