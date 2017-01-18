@@ -16,7 +16,6 @@
 
 //forward declare testing structure
 class testPackedCandidate;
-class CovarianceParameterization;
 
 namespace pat {
   class PackedCandidate : public reco::Candidate {
@@ -355,15 +354,16 @@ namespace pat {
       packedHits_ = (numberOfPixelHits_&trackPixelHitsMask) | (numberOfStripHits_ << trackStripHitsShift);
     }
   
-    virtual void setTrackProperties( const reco::Track & tk, const reco::Track::CovarianceMatrix & covariance,int quality,int covarianceVersion = 1) {
+    virtual void setTrackProperties( const reco::Track & tk, const reco::Track::CovarianceMatrix & covariance,int quality,int covarianceVersion = 100) {
+      std::cout << "track pt " << tk.pt() << std::endl;
       covarianceVersion_ = covarianceVersion;
       m_ = covariance;
       normalizedChi2_ = tk.normalizedChi2();
       //
       setHits(tk); //tk.hitPattern().numberOfValidPixelHits(),tk.hitPattern().numberOfValidHits());
       packBoth();
-      packCovariance(quality,false); //TODO: check if these 2 lines make sense as the m_ is protected behind the Track atomic pointer...
-      unpackTrk();         // 
+      //packCovariance(quality,false); //TODO: check if these 2 lines make sense as the m_ is protected behind the Track atomic pointer...
+      //unpackTrk();         // 
     }
 
     virtual void setTrackHits( const reco::Track & tk ) {
@@ -574,8 +574,10 @@ namespace pat {
     void unpack() const ;
     void packVtx(bool unpackAfterwards=true) ;
     void unpackVtx() const ;
+#if 0
     void packCovariance(int quality,bool unpackAfterwards=true) ;
     void unpackParameterizedCovariance() const;
+#endif 
     void maybeUnpackBoth() const { if (!p4c_) unpack(); if (!vertex_) unpackVtx(); }
     void maybeUnpackTrack() const { if (!track_) unpackTrk(); }
     void packBoth() { pack(false); packVtx(false); delete p4_.exchange(nullptr); delete p4c_.exchange(nullptr); delete vertex_.exchange(nullptr); unpack(); unpackVtx(); } // do it this way, so that we don't loose precision on the angles before computing dxy,dz
@@ -607,14 +609,27 @@ namespace pat {
     /// track quality information
     uint8_t normalizedChi2_; 
     int covarianceVersion_;
+#if 0
     static CovarianceParameterization covarianceParameterization_;
+    //static std::atomic<CovarianceParameterization*> covarianceParameterization_;
     const CovarianceParameterization & covarianceParameterization() const {
+/*        if(covarianceParameterization_.load()==0) {
+          std::cout << "New ! " << std::endl;
+           covarianceParameterization_.store(new CovarianceParameterization()); 
+        }
+        if(covarianceParameterization_.load()->loadedVersion() != covarianceVersion_)
+        {
+          covarianceParameterization_.load()->load(covarianceVersion_); 
+        }
+        return  *(covarianceParameterization_.load());*/
         if(covarianceParameterization_.loadedVersion() != covarianceVersion_)
         {
           covarianceParameterization_.load(covarianceVersion_); 
         }
         return  covarianceParameterization_;
     }
+#endif
+
     /// check overlap with another Candidate                                              
     virtual bool overlap( const reco::Candidate & ) const;
     template<typename, typename, typename> friend struct component;

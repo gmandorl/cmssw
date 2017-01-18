@@ -280,7 +280,9 @@
   <class name="pat::Conversion"  ClassVersion="11">
    <version ClassVersion="11" checksum="1239840459"/>
   </class>
-
+  <class name="pat::PackedCandidate::PackedCovariance" ClassVersion="10">
+   <version ClassVersion="10" checksum="4129300195"/>
+  </class>
   <class name="pat::PackedCandidate" ClassVersion="28">
    <version ClassVersion="28" checksum="2333826691"/>
     <version ClassVersion="27" checksum="2418936168"/>
@@ -317,6 +319,7 @@
     <field name="dptdpt_" transient="true" />
     <field name="track_" transient="true" />
     <field name="m_" transient="true" />
+   <!--- <field name="covarianceParameterization_" transient="true" />-->
   </class>
   <ioread sourceClass="pat::PackedCandidate"  version="[1-]" targetClass="pat::PackedCandidate" source="" target="p4_">
     <![CDATA[delete p4_.exchange(nullptr);

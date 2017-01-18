@@ -2,12 +2,15 @@
 #define _DataFormats_PatCandidates_CovarianceParameterization_h_
 #include <TFile.h>
 #include <TH3D.h>
-
+#include <iostream>
 class CovarianceParameterization {
     public:
-        CovarianceParameterization() : loadedVersion_(-1),bits_{{{0}}}  {}
+        CovarianceParameterization() : loadedVersion_(-1),bits_{{{0}}}  
+        {
+          std::cout << "Init " <<  loadedVersion_ << " " << this << std::endl;
+        }
         bool isValid() const {return loadedVersion_!=-1; }
-        bool loadedVersion() const {return loadedVersion_; }
+        int loadedVersion() const {return loadedVersion_; }
         void load(int version);
         float  meanValue(int i,int j,int sign,float pt, float eta, int nHits,int pixelHits,  float cii=1.,float cjj=1.) const ;
         float  packed(float value,int quality, int i,int j,float pt, float eta, int nHits,int pixelHits,  float cii=1.,float cjj=1.) const;

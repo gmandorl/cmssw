@@ -7,11 +7,10 @@
 void CovarianceParameterization::load(int version)
 {
  edm::FileInPath fip((boost::format("DataFormats/PatCandidates/data/CovarianceParameterization_version%d.root") % version).str());
- std::cout << "Hello there, I'm going to load " <<  fip.fullPath().c_str() << std::endl;
+ std::cerr << "Hello there, I'm going to load " <<  fip.fullPath().c_str() << std::endl;
  TFile fileToRead(fip.fullPath().c_str());
 //Read files from here fip.fullPath().c_str();
  if(fileToRead.IsOpen())  {
-     loadedVersion_=version; 
      readFile(fileToRead);
      fileToRead.Close();
  //Those can be loaded from the root file too in priciple
@@ -29,7 +28,9 @@ void CovarianceParameterization::load(int version)
      bits_[3][3][4]=4;
      bits_[4][4][5]=4;
      bits_[3][4][6]=4;
- }
+     loadedVersion_=version; 
+     std::cerr << "Loaded version " << loadedVersion_ << " " << version << " " << loadedVersion() << std::endl;
+ } else {loadedVersion_=-1;}
 
 }
 
@@ -66,6 +67,7 @@ void CovarianceParameterization::addTheHistogram(std::vector<TH3D *> * HistoVect
 
 
 float CovarianceParameterization::meanValue(int i,int j,int sign,float pt, float eta, int nHits,int pixelHits,  float cii,float cjj) const {
+
    if(loadedVersion_==0) {
       if(i==0 and j==0) return 1./pt/pt;
       if(i==2 and j==2) return 1./pt/pt;
@@ -89,7 +91,7 @@ float CovarianceParameterization::meanValue(int i,int j,int sign,float pt, float
 
 
 //uble TrackCovarianceMatrixParametrization::assignTheElement(double oldElement, int pixelValid, int innerStripsValid, int innerStripsLost, int indexOfTheHitogramInTheList, int ptBin, int etaBin, int hitBin) {
-
+    std::cout << "bins " << ptBin << " " << etaBin << " "<< hitBin << " " << indexOfTheHitogramInTheList;
     double meanValue = 0.;
     if (pixelHits > 0) {
             meanValue =sign* cov_elements_pixelHit[indexOfTheHitogramInTheList]->GetBinContent(ptBin, etaBin, hitBin);
@@ -105,6 +107,7 @@ float CovarianceParameterization::packed(float value, int quality, int i,int j,f
     if(i>j) std::swap(i,j);
     float ratio=value/meanValue(i,j,std::copysign(1.,value),pt,eta,nHits,pixelHits,cii,cjj);
     int bits=bits_[i][j][quality];
+    std::cout << "bits " << bits << std::endl;
     if(bits==0) return 0;
     if(bits==1) return std::copysign(1.,value);
     return MiniFloatConverter::reduceMantissaToNbits(ratio,bits);

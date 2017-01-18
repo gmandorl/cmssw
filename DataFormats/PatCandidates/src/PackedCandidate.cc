@@ -6,7 +6,11 @@
 
 #include "DataFormats/PatCandidates/interface/liblogintpack.h"
 using namespace logintpack;
-CovarianceParameterization  pat::PackedCandidate::covarianceParameterization_=CovarianceParameterization();
+//std::atomic<CovarianceParameterization*> pat::PackedCandidate::covarianceParameterization_(nullptr);
+
+#if 0
+CovarianceParameterization pat::PackedCandidate::covarianceParameterization_ = CovarianceParameterization();
+#endif 
 
 void pat::PackedCandidate::pack(bool unpackAfterwards) {
     packedPt_  =  MiniFloatConverter::float32to16(p4_.load()->Pt());
@@ -79,22 +83,23 @@ void pat::PackedCandidate::unpack() const {
     m_(4,4)=MiniFloatConverter::float16to32(packedCovarianceDzDz_)/10000.;
 
 }*/
-
+#if 0
 void pat::PackedCandidate::packCovariance(int quality,bool unpackAfterwards){
    //TODO: implement here the packing around 
    // mean values in fewer bits
    if(covarianceVersion_  == 0) 
      {
-        covarianceVersion_=1; //assume Phase1 default covariance
+        covarianceVersion_=100; //assume Phase1 default covariance
      }
+    //std::cout << covarianceVersion_ << " vs " << covarianceParameterization().loadedVersion() << std::endl;
     packedCovariance_.dptdpt = covarianceParameterization().packed(m_(0,0),0,0,quality,pt(),eta(),numberOfHits(), numberOfPixelHits());
-    
+    std::cout << "packed ratio " << packedCovariance_.dptdpt << " "<<pt() << " "<< eta() <<  std::endl; 
    //unpack afterwards
    if(unpackAfterwards) unpackParameterizedCovariance();
 }
 
 void pat::PackedCandidate::unpackParameterizedCovariance() const {
- 
+    std::cout << "Unpack called!" << std::endl; 
     const CovarianceParameterization & p=covarianceParameterization();
     if(p.isValid()) 
     {
@@ -108,6 +113,7 @@ void pat::PackedCandidate::unpackParameterizedCovariance() const {
      <<"or avoid accessing track parameter uncertainties. ";
     }
 }
+#endif 
 
 void pat::PackedCandidate::unpackVtx() const {
     reco::VertexRef pvRef = vertexRef();
@@ -150,8 +156,9 @@ float pat::PackedCandidate::dz(const Point &p) const {
 
 void pat::PackedCandidate::unpackTrk() const {
     maybeUnpackBoth();
+#if 0
     unpackParameterizedCovariance();
-
+#endif 
     math::RhoEtaPhiVector p3(p4_.load()->pt(),p4_.load()->eta(),phiAtVtx());
     int numberOfStripLayers = stripLayersWithMeasurement(), numberOfPixelLayers = pixelLayersWithMeasurement();
     int numberOfPixelHits = this->numberOfPixelHits();
@@ -206,6 +213,8 @@ void pat::PackedCandidate::unpackTrk() const {
           track->appendTrackerHitPattern(StripSubdetector::TIB, 1, 1, TrackingRecHit::valid);
     }
 
+
+    std::cout <<" here "  <<  std::endl;
     switch (innerLost) {
         case validHitInFirstPixelBarrelLayer:
             break;
@@ -226,6 +235,7 @@ void pat::PackedCandidate::unpackTrk() const {
     if( track_.compare_exchange_strong(expected,track.get()) ) {
       track.release();
     }
+
 
 }
 
