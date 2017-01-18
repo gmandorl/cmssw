@@ -362,7 +362,7 @@ namespace pat {
       //
       setHits(tk); //tk.hitPattern().numberOfValidPixelHits(),tk.hitPattern().numberOfValidHits());
       packBoth();
-      //packCovariance(quality,false); //TODO: check if these 2 lines make sense as the m_ is protected behind the Track atomic pointer...
+      packCovariance(quality,false); //TODO: check if these 2 lines make sense as the m_ is protected behind the Track atomic pointer...
       //unpackTrk();         // 
     }
 
