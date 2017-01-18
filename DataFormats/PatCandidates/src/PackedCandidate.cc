@@ -8,9 +8,7 @@
 using namespace logintpack;
 //std::atomic<CovarianceParameterization*> pat::PackedCandidate::covarianceParameterization_(nullptr);
 
-#if 0
 CovarianceParameterization pat::PackedCandidate::covarianceParameterization_ = CovarianceParameterization();
-#endif 
 
 void pat::PackedCandidate::pack(bool unpackAfterwards) {
     packedPt_  =  MiniFloatConverter::float32to16(p4_.load()->Pt());
@@ -58,6 +56,7 @@ void pat::PackedCandidate::unpack() const {
     auto p4c = std::make_unique<LorentzVector>( *p4 );
     PolarLorentzVector* expectp4= nullptr;
     if( p4_.compare_exchange_strong(expectp4,p4.get()) ) {
+      p4.release();
     }
 
     //p4c_ works as the guard for unpacking so it
@@ -83,7 +82,6 @@ void pat::PackedCandidate::unpack() const {
     m_(4,4)=MiniFloatConverter::float16to32(packedCovarianceDzDz_)/10000.;
 
 }*/
-#if 0
 void pat::PackedCandidate::packCovariance(int quality,bool unpackAfterwards){
    //TODO: implement here the packing around 
    // mean values in fewer bits
@@ -113,7 +111,6 @@ void pat::PackedCandidate::unpackParameterizedCovariance() const {
      <<"or avoid accessing track parameter uncertainties. ";
     }
 }
-#endif 
 
 void pat::PackedCandidate::unpackVtx() const {
     reco::VertexRef pvRef = vertexRef();
@@ -156,9 +153,7 @@ float pat::PackedCandidate::dz(const Point &p) const {
 
 void pat::PackedCandidate::unpackTrk() const {
     maybeUnpackBoth();
-#if 0
     unpackParameterizedCovariance();
-#endif 
     math::RhoEtaPhiVector p3(p4_.load()->pt(),p4_.load()->eta(),phiAtVtx());
     int numberOfStripLayers = stripLayersWithMeasurement(), numberOfPixelLayers = pixelLayersWithMeasurement();
     int numberOfPixelHits = this->numberOfPixelHits();

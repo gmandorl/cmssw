@@ -574,10 +574,8 @@ namespace pat {
     void unpack() const ;
     void packVtx(bool unpackAfterwards=true) ;
     void unpackVtx() const ;
-#if 0
     void packCovariance(int quality,bool unpackAfterwards=true) ;
     void unpackParameterizedCovariance() const;
-#endif 
     void maybeUnpackBoth() const { if (!p4c_) unpack(); if (!vertex_) unpackVtx(); }
     void maybeUnpackTrack() const { if (!track_) unpackTrk(); }
     void packBoth() { pack(false); packVtx(false); delete p4_.exchange(nullptr); delete p4c_.exchange(nullptr); delete vertex_.exchange(nullptr); unpack(); unpackVtx(); } // do it this way, so that we don't loose precision on the angles before computing dxy,dz
@@ -609,7 +607,6 @@ namespace pat {
     /// track quality information
     uint8_t normalizedChi2_; 
     int covarianceVersion_;
-#if 0
     static CovarianceParameterization covarianceParameterization_;
     //static std::atomic<CovarianceParameterization*> covarianceParameterization_;
     const CovarianceParameterization & covarianceParameterization() const {
@@ -628,7 +625,6 @@ namespace pat {
         }
         return  covarianceParameterization_;
     }
-#endif
 
     /// check overlap with another Candidate                                              
     virtual bool overlap( const reco::Candidate & ) const;
