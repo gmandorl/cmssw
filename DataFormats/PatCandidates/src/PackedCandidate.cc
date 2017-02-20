@@ -89,9 +89,19 @@ void pat::PackedCandidate::packCovariance(int quality,bool unpackAfterwards){
      {
         covarianceVersion_=100; //assume Phase1 default covariance
      }
-    //std::cout << covarianceVersion_ << " vs " << covarianceParameterization().loadedVersion() << std::endl;
-    packedCovariance_.dptdpt = covarianceParameterization().packed(m_(0,0),0,0,quality,pt(),eta(),numberOfHits(), numberOfPixelHits());
-    std::cout << "packed ratio " << packedCovariance_.dptdpt << " "<<pt() << " "<< eta() <<  std::endl; 
+//    std::cout << covarianceVersion_ << " vs " << covarianceParameterization().loadedVersion() << std::endl;
+    packedCovariance_.dptdpt = covarianceParameterization().packed(m_(0,0),quality,0,0,pt(),eta(),numberOfHits(), numberOfPixelHits());
+    packedCovariance_.detadeta = covarianceParameterization().packed(m_(1,1),quality,1,1,pt(),eta(),numberOfHits(), numberOfPixelHits());
+    packedCovariance_.dphidphi = covarianceParameterization().packed(m_(2,2),quality,2,2,pt(),eta(),numberOfHits(), numberOfPixelHits());
+    packedCovariance_.dxydxy = covarianceParameterization().packed(m_(3,3),quality,3,3,pt(),eta(),numberOfHits(), numberOfPixelHits());
+    union  { float f; uint32_t i;} x;
+    x.f=m_(3,3)/covarianceParameterization().meanValue(3,3,copysign(1.,m_(3,3)), pt(), eta(), numberOfHits(), numberOfPixelHits());
+    std::cout << "dxydxy "<<  x.i << " " << pt() << std::endl;
+    packedCovariance_.dzdz = covarianceParameterization().packed(m_(4,4),quality,4,4,pt(),eta(),numberOfHits(), numberOfPixelHits());
+    packedCovariance_.dxydz = covarianceParameterization().packed(m_(3,4),quality,3,4,pt(),eta(),numberOfHits(), numberOfPixelHits());
+    packedCovariance_.dlambdadz = covarianceParameterization().packed(m_(1,4),quality,1,4,pt(),eta(),numberOfHits(), numberOfPixelHits());
+    packedCovariance_.dphidxy = covarianceParameterization().packed(m_(2,3),quality,2,3,pt(),eta(),numberOfHits(), numberOfPixelHits());
+    //std::cout << "packed ratio " << packedCovariance_.dptdpt << " "<<pt() << " "<< eta() <<  std::endl; 
    //unpack afterwards
    if(unpackAfterwards) unpackParameterizedCovariance();
 }

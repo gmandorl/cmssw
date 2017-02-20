@@ -45,7 +45,7 @@ namespace pat {
       p4_(new PolarLorentzVector(0,0,0,0)), p4c_( new LorentzVector(0,0,0,0)), 
       vertex_(new Point(0,0,0)), dphi_(0), track_(nullptr), pdgId_(0),
       qualityFlags_(0), pvRefKey_(reco::VertexRef::invalidKey()),
-      m_(), packedHits_(0), packedLayers_(0), normalizedChi2_(0) { }
+      m_(), packedHits_(0), packedLayers_(0), normalizedChi2_(0),covarianceVersion_(0) { }
 
     explicit PackedCandidate( const reco::Candidate & c,
                               const reco::VertexRefProd &pvRefProd,
@@ -55,7 +55,7 @@ namespace pat {
       p4c_( new LorentzVector(*p4_)), vertex_( new Point(c.vertex())), dphi_(0), 
       track_(nullptr), pdgId_(c.pdgId()), qualityFlags_(0), pvRefProd_(pvRefProd),
       pvRefKey_(pvRefKey),m_(), packedHits_(0), packedLayers_(0),
-      normalizedChi2_(0) {
+      normalizedChi2_(0),covarianceVersion_(0) {
       packBoth();
     }
 
@@ -68,7 +68,7 @@ namespace pat {
       vertex_( new Point(vtx) ), dphi_(reco::deltaPhi(phiAtVtx,p4_.load()->phi())), 
       track_(nullptr), pdgId_(pdgId),
       qualityFlags_(0), pvRefProd_(pvRefProd), pvRefKey_(pvRefKey),
-      m_(),packedHits_(0), packedLayers_(0),normalizedChi2_(0) {
+      m_(),packedHits_(0), packedLayers_(0),normalizedChi2_(0),covarianceVersion_(0) {
       packBoth();
     }
 
@@ -82,7 +82,7 @@ namespace pat {
       dphi_(reco::deltaPhi(phiAtVtx,p4_.load()->phi())), 
       track_(nullptr), pdgId_(pdgId), qualityFlags_(0),
       pvRefProd_(pvRefProd), pvRefKey_(pvRefKey),
-      m_(),packedHits_(0),packedLayers_(0),normalizedChi2_(0) {
+      m_(),packedHits_(0),packedLayers_(0),normalizedChi2_(0),covarianceVersion_(0)  {
       packBoth();
     }
 
@@ -102,7 +102,7 @@ namespace pat {
       pdgId_(iOther.pdgId_), qualityFlags_(iOther.qualityFlags_), 
       pvRefProd_(iOther.pvRefProd_),pvRefKey_(iOther.pvRefKey_),
       m_(iOther.m_),
-      packedHits_(iOther.packedHits_),packedLayers_(iOther.packedLayers_),  normalizedChi2_(iOther.normalizedChi2_) {
+      packedHits_(iOther.packedHits_),packedLayers_(iOther.packedLayers_),  normalizedChi2_(iOther.normalizedChi2_),covarianceVersion_(iOther.covarianceVersion_)  {
       }
 
     PackedCandidate( PackedCandidate&& iOther) :
@@ -120,7 +120,7 @@ namespace pat {
       pdgId_(iOther.pdgId_), qualityFlags_(iOther.qualityFlags_), 
       pvRefProd_(std::move(iOther.pvRefProd_)),pvRefKey_(iOther.pvRefKey_),
       m_(iOther.m_),
-      packedHits_(iOther.packedHits_), packedLayers_(iOther.packedLayers_),normalizedChi2_(iOther.normalizedChi2_) {
+      packedHits_(iOther.packedHits_), packedLayers_(iOther.packedLayers_),normalizedChi2_(iOther.normalizedChi2_),covarianceVersion_(iOther.covarianceVersion_) {
       }
 
 
@@ -177,6 +177,7 @@ namespace pat {
       packedHits_=iOther.packedHits_; 
       packedLayers_=iOther.packedLayers_; 
       normalizedChi2_=iOther.normalizedChi2_;
+      covarianceVersion_=iOther.covarianceVersion_;
       return *this;
     }
 
@@ -210,6 +211,7 @@ namespace pat {
       packedHits_=iOther.packedHits_; 
       packedLayers_=iOther.packedLayers_; 
       normalizedChi2_=iOther.normalizedChi2_;
+      covarianceVersion_=iOther.covarianceVersion_;
       return *this;
     }
 
@@ -355,7 +357,7 @@ namespace pat {
     }
   
     virtual void setTrackProperties( const reco::Track & tk, const reco::Track::CovarianceMatrix & covariance,int quality,int covarianceVersion = 100) {
-      std::cout << "track pt " << tk.pt() << std::endl;
+//      std::cout << "track pt " << tk.pt() << std::endl;
       covarianceVersion_ = covarianceVersion;
       m_ = covariance;
       normalizedChi2_ = tk.normalizedChi2();
@@ -378,7 +380,7 @@ namespace pat {
     int pixelLayersWithMeasurement() const { return packedLayers_ & trackPixelHitsMask; }
     int stripLayersWithMeasurement() const { return (packedLayers_ >> trackStripHitsShift); }
     int trackerLayersWithMeasurement() const { return stripLayersWithMeasurement() + pixelLayersWithMeasurement(); }
-    virtual void setCovarianceVersiont(int v) {covarianceVersion_=v;}
+    virtual void setCovarianceVersion(int v) {covarianceVersion_=v;}
     int covarianceVersion() const { return covarianceVersion_;}
 
 	
