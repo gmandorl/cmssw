@@ -134,11 +134,11 @@ void CovarianceParameterization::addTheHistogram(std::vector<TH3D *> * HistoVect
 
 
 float CovarianceParameterization::meanValue(int i,int j,int sign,float pt, float eta, int nHits,int pixelHits,  float cii,float cjj) const {
-   if(loadedVersion_==0) {
+/*   if(loadedVersion_==0) {
       if(i==0 and j==0) return 1./pt/pt;
       if(i==2 and j==2) return 1./pt/pt;
       return 1; 
-    }
+    }*/
     int hitNumberToUse = nHits;
     if (hitNumberToUse < 2 ) hitNumberToUse = 2;
     if (hitNumberToUse > 32 ) hitNumberToUse = 32;
@@ -157,7 +157,7 @@ float CovarianceParameterization::meanValue(int i,int j,int sign,float pt, float
 
 
 //uble TrackCovarianceMatrixParametrization::assignTheElement(double oldElement, int pixelValid, int innerStripsValid, int innerStripsLost, int indexOfTheHitogramInTheList, int ptBin, int etaBin, int hitBin) {
-//    std::cout << "bins " << ptBin << " " << etaBin << " "<< hitBin << " " << indexOfTheHitogramInTheList;
+    std::cout << "bins " << ptBin << " " << etaBin << " "<< hitBin << " " << indexOfTheHitogramInTheList << std::endl;
     double meanValue = 0.;
     if (pixelHits > 0) {
             meanValue =sign* cov_elements_pixelHit[indexOfTheHitogramInTheList]->GetBinContent(ptBin, etaBin, hitBin);
@@ -171,12 +171,13 @@ float CovarianceParameterization::meanValue(int i,int j,int sign,float pt, float
 
 float CovarianceParameterization::pack(float value, int schema, int i,int j,float pt, float eta, int nHits,int pixelHits,  float cii,float cjj) const {
     if(i>j) std::swap(i,j);
-    float ref=meanValue(i,j,value,pt,eta,nHits,pixelHits,cii,cjj);
+    float ref=meanValue(i,j,1.,pt,eta,nHits,pixelHits,cii,cjj);
+    std::cout << i << " , " << j << " v: " << value << " r: " << ref << " " << schemas[schema](i,j).pack(value,ref)<< std::endl;
     return schemas[schema](i,j).pack(value,ref);
 }
 float CovarianceParameterization::unpack(uint16_t packed, int schema, int i,int j,float pt, float eta, int nHits,int pixelHits,  float cii,float cjj) const {
     if(i>j) std::swap(i,j);
-    float ref=meanValue(i,j,packed,pt,eta,nHits,pixelHits,cii,cjj);
+    float ref=meanValue(i,j,1.,pt,eta,nHits,pixelHits,cii,cjj);
     return schemas[schema](i,j).unpack(packed,ref);
  
 }
