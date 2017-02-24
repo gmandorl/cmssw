@@ -578,6 +578,12 @@ namespace pat {
     void unpack() const ;
     void packVtx(bool unpackAfterwards=true) ;
     void unpackVtx() const ;
+    void unpackCovarianceElement(uint16_t packed, int i,int j) const {
+      m_(i,j)= covarianceParameterization().unpack(m_(i,j),covarianceSchema_,i,j,pt(),eta(),numberOfHits(), numberOfPixelHits());
+    }
+    uint16_t packCovarianceElement(int i,int j) const {
+      return covarianceParameterization().pack(m_(i,j),covarianceSchema_,i,j,pt(),eta(),numberOfHits(), numberOfPixelHits());
+    }
     void packCovariance(bool unpackAfterwards=true) ;
     void unpackCovariance() const;
     void maybeUnpackBoth() const { if (!p4c_) unpack(); if (!vertex_) unpackVtx(); }
