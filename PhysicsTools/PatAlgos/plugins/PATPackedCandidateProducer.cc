@@ -19,7 +19,6 @@
 #include "FWCore/Utilities/interface/Exception.h"
 #include "DataFormats/GsfTrackReco/interface/GsfTrack.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
-
 /*#include "TrackingTools/TrajectoryState/interface/TrajectoryStateTransform.h"
 #include "TrackingTools/GeomPropagators/interface/AnalyticalImpactPointExtrapolator.h"
 #include "MagneticField/Engine/interface/MagneticField.h"
@@ -44,8 +43,10 @@ namespace pat {
             bool candsOrdering(pat::PackedCandidate i,pat::PackedCandidate j) const {
                 if (std::abs(i.charge()) == std::abs(j.charge())) {
                     if(i.charge()!=0){
-                        if(i.pt() > minPtForTrackProperties_ and j.pt() <= minPtForTrackProperties_ ) return true;
-                        if(i.pt() <= minPtForTrackProperties_ and j.pt() > minPtForTrackProperties_ ) return false;
+                        if(i.pt() > 1. and j.pt() <= 1. ) return true;
+                        if(i.pt() <= 1. and j.pt() > 1. ) return false;
+                        if(i.pt() > 0.5 and j.pt() <= 0.5 ) return true;
+                        if(i.pt() <= 0.5 and j.pt() > 0.5 ) return false;
                   }
                    if(i.vertexRef() == j.vertexRef()) 
                       return i.eta() > j.eta();
@@ -164,6 +165,7 @@ void pat::PATPackedCandidateProducer::produce(edm::StreamID, edm::Event& iEvent,
         for(unsigned int j=0; j< svWhiteList[i].numberOfSourceCandidatePtrs(); j++) {
           const edm::Ptr<reco::Candidate> & c = svWhiteList[i].sourceCandidatePtr(j);
           if(c.id() == cands.id()) whiteList.insert(c.key());
+
         }
       }
     }
@@ -223,14 +225,17 @@ void pat::PATPackedCandidateProducer::produce(edm::StreamID, edm::Event& iEvent,
 
           outPtrP->push_back( pat::PackedCandidate(cand.polarP4(), vtx, phiAtVtx, cand.pdgId(), PVRefProd, PV.key()));
           outPtrP->back().setAssociationQuality(pat::PackedCandidate::PVAssociationQuality(qualityMap[quality]));
+          outPtrP->back().setCovarianceVersion(0);
           if(cand.trackRef().isNonnull() && PVOrig->trackWeight(cand.trackRef()) > 0.5 && quality == 7) {
                   outPtrP->back().setAssociationQuality(pat::PackedCandidate::UsedInFitTight);
           }
           // properties of the best track 
           outPtrP->back().setLostInnerHits( lostHits );
           if(outPtrP->back().pt() > minPtForTrackProperties_ || whiteList.find(ic)!=whiteList.end()) {
-            outPtrP->back().setTrackProperties(*ctrack);
+            outPtrP->back().setTrackProperties(*ctrack,0); //high quality
             //outPtrP->back().setTrackProperties(*ctrack,tsos.curvilinearError());
+          } else {
+             if(outPtrP->back().pt() > 0.5)   outPtrP->back().setTrackProperties(*ctrack,1); //low quality
           }
 
           // these things are always for the CKF track
