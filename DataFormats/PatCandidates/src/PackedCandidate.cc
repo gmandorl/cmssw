@@ -110,7 +110,12 @@ void pat::PackedCandidate::unpackCovariance() const {
     {
       unpackCovarianceElement(packedCovariance_.dptdpt,0,0);
       unpackCovarianceElement(packedCovariance_.detadeta,1,1);
-      //.... 
+      unpackCovarianceElement(packedCovariance_.dphidphi,2,2);
+      unpackCovarianceElement(packedCovariance_.dxydxy,3,3);
+      unpackCovarianceElement(packedCovariance_.dzdz,4,4);
+      unpackCovarianceElement(packedCovariance_.dxydz,3,4);
+      unpackCovarianceElement(packedCovariance_.dlambdadz,1,4);
+      unpackCovarianceElement(packedCovariance_.dphidxy,2,3);
     } else {
   throw edm::Exception(edm::errors::UnimplementedFeature)
      << "You do not have a valid track parameters file loaded. "

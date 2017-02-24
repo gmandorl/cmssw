@@ -85,19 +85,15 @@ void CovarianceParameterization::load(int version)
      CompressionSchema schema0;
      schema0(0,0)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,{-3,4,4});
      schema0(1,1)=schema0(0,0);
-/*     schema1[index(2,2)]=schema1[index(0,0)];
-     schema1[index(3,3)]=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,3,{-3,4,4096});
-     schema1[index(3,4)]=schema1[index(3,3)];
-     schema1[index(4,4)]=schema1[index(3,3)];
-     //FIXME: check indices is it 1,3   2,4 or 1,4  2,3 ?
-     schema1[index(1,3)]=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,3,{-3,4,4});
-     schema1[index(2,4)]=schema1[index(1,3)];*/
-
-
+     schema0(2,2)=schema0(0,0);
+     schema0(3,3)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,{-3,4,4096});
+     schema0(4,4)=schema0(3,3);
+     schema0(3,4)=schema0(3,3);
+     schema0(2,3)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,{-3,4,64});
+     schema0(1,4)=schema0(2,3);
+     
      schemas.push_back(schema0); 
- //Those can be loaded from the root file too in priciple
- //    for(int i=0;i<150;i++) bits_[i]=0;
-
+     schemas.push_back(schema0); //FIXME: schema 0 and 1 are identical this way 
 
     loadedVersion_=version; 
      std::cerr << "Loaded version " << loadedVersion_ << " " << version << " " << loadedVersion() << std::endl;
