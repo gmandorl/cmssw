@@ -284,7 +284,7 @@
    <version ClassVersion="10" checksum="3320406063"/>
   </class>
   <class name="pat::PackedCandidate" ClassVersion="28">
-   <version ClassVersion="28" checksum="361853240"/>
+   <version ClassVersion="28" checksum="2333826691"/>
     <version ClassVersion="27" checksum="2418936168"/>
     <version ClassVersion="26" checksum="2986327792"/>
     <version ClassVersion="25" checksum="3654469025"/>
@@ -311,6 +311,7 @@
     <field name="dphi_" transient="true" />
     <field name="track_" transient="true" />
     <field name="m_" transient="true" />
+    <!--- <field name="covariance_load_flag" transient="true"/> -->
    <!--- <field name="covarianceParameterization_" transient="true" />-->
   </class>
   <ioread sourceClass="pat::PackedCandidate"  version="[1-]" targetClass="pat::PackedCandidate" source="" target="p4_">

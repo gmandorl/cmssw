@@ -9,6 +9,7 @@ using namespace logintpack;
 //std::atomic<CovarianceParameterization*> pat::PackedCandidate::covarianceParameterization_(nullptr);
 
 CovarianceParameterization pat::PackedCandidate::covarianceParameterization_ = CovarianceParameterization();
+std::once_flag pat::PackedCandidate::covariance_load_flag;
 
 void pat::PackedCandidate::pack(bool unpackAfterwards) {
     packedPt_  =  MiniFloatConverter::float32to16(p4_.load()->Pt());
@@ -84,13 +85,6 @@ void pat::PackedCandidate::unpack() const {
 }*/
 
 void pat::PackedCandidate::packCovariance(bool unpackAfterwards){
-   //TODO: implement here the packing around 
-   // mean values in fewer bits
-   if(covarianceVersion_  == 0) 
-     {
-        covarianceVersion_=100; //assume Phase1 default covariance
-     }
-//    std::cout << covarianceVersion_ << " vs " << covarianceParameterization().loadedVersion() << std::endl;
     packedCovariance_.dptdpt = packCovarianceElement(0,0);
     packedCovariance_.detadeta = packCovarianceElement(1,1);
     packedCovariance_.dphidphi = packCovarianceElement(2,2); 

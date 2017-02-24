@@ -357,10 +357,10 @@ namespace pat {
       packedHits_ = (numberOfPixelHits_&trackPixelHitsMask) | (numberOfStripHits_ << trackStripHitsShift);
     }
   
-    virtual void setTrackProperties( const reco::Track & tk, const reco::Track::CovarianceMatrix & covariance,int quality,int covarianceVersion = 100) {
+    virtual void setTrackProperties( const reco::Track & tk, const reco::Track::CovarianceMatrix & covariance,int quality,int covarianceVersion = 0) {
 //      std::cout << "track pt " << tk.pt() << std::endl;
-      covarianceVersion_ = covarianceVersion;
-      covarianceSchema_ = quality;
+      covarianceVersion_ = covarianceVersion & 0xFF;
+      covarianceVersion_ = quality << 16;
       m_ = covariance;
       normalizedChi2_ = tk.normalizedChi2();
       //
@@ -579,10 +579,10 @@ namespace pat {
     void packVtx(bool unpackAfterwards=true) ;
     void unpackVtx() const ;
     void unpackCovarianceElement(uint16_t packed, int i,int j) const {
-      m_(i,j)= covarianceParameterization().unpack(m_(i,j),covarianceSchema_,i,j,pt(),eta(),numberOfHits(), numberOfPixelHits());
+      m_(i,j)= covarianceParameterization().unpack(m_(i,j),covarianceVersion_>>16,i,j,pt(),eta(),numberOfHits(), numberOfPixelHits());
     }
     uint16_t packCovarianceElement(int i,int j) const {
-      return covarianceParameterization().pack(m_(i,j),covarianceSchema_,i,j,pt(),eta(),numberOfHits(), numberOfPixelHits());
+      return covarianceParameterization().pack(m_(i,j),covarianceVersion_>>16,i,j,pt(),eta(),numberOfHits(), numberOfPixelHits());
     }
     void packCovariance(bool unpackAfterwards=true) ;
     void unpackCovariance() const;
@@ -616,14 +616,13 @@ namespace pat {
     
     /// track quality information
     uint8_t normalizedChi2_; 
-    uint8_t covarianceSchema_;
     int covarianceVersion_;
     CMS_THREAD_SAFE static CovarianceParameterization covarianceParameterization_;
     //static std::atomic<CovarianceParameterization*> covarianceParameterization_;
-    mutable std::once_flag covariance_load_flag;
+    static std::once_flag covariance_load_flag;
     const CovarianceParameterization & covarianceParameterization() const {
-	std::call_once(covariance_load_flag,[](int v) { covarianceParameterization_.load(v); } ,covarianceVersion_);
-        if(covarianceParameterization_.loadedVersion() != covarianceVersion_)
+	std::call_once(covariance_load_flag,[](int v) { covarianceParameterization_.load(v); } ,(covarianceVersion_ &0xFF));
+        if(covarianceParameterization_.loadedVersion() != (covarianceVersion_ & 0xFF))
         {
           std::cout << "Attempting to load multiple covariance version in same process. This is not supported." << std::endl;
 	  abort();
