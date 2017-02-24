@@ -19,7 +19,6 @@
 #include "FWCore/Utilities/interface/Exception.h"
 #include "DataFormats/GsfTrackReco/interface/GsfTrack.h"
 #include "DataFormats/MuonReco/interface/Muon.h"
-#include "FWCore/Framework/interface/EventPrincipal.h"
 /*#include "TrackingTools/TrajectoryState/interface/TrajectoryStateTransform.h"
 #include "TrackingTools/GeomPropagators/interface/AnalyticalImpactPointExtrapolator.h"
 #include "MagneticField/Engine/interface/MagneticField.h"
@@ -165,7 +164,6 @@ void pat::PATPackedCandidateProducer::produce(edm::StreamID, edm::Event& iEvent,
       for(unsigned int i=0; i<svWhiteList.size();i++) {
         for(unsigned int j=0; j< svWhiteList[i].numberOfSourceCandidatePtrs(); j++) {
           const edm::Ptr<reco::Candidate> & c = svWhiteList[i].sourceCandidatePtr(j);
-          std::cout << ((const edm::EventPrincipal *)(c.productGetter()))->aux().id().event() <<std::endl;
           if(c.id() == cands.id()) whiteList.insert(c.key());
 
         }
