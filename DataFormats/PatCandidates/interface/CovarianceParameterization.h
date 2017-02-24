@@ -3,9 +3,32 @@
 #include <TFile.h>
 #include <TH3D.h>
 #include <iostream>
+
+class CompressionElement {
+    public:
+      enum Method {float16=0,reduceMantissa=1,logPack=2,tanLogPack=3,zero=4};
+      enum Target {absoluteValue=0,ratioToRef=1,differenceToRef=2};
+      CompressionElement():method(zero),target(absoluteValue){}
+      CompressionElement(Method m, Target t, std::initializer_list<float> p): method(m),target(t),params(p){}
+      Method method;
+      Target target;
+      std::vector<float> params;
+      uint16_t pack(float value, float ref=0.) const ;
+      float unpack(uint16_t packed, float ref=0.) const;
+
+};
+  
+
 class CovarianceParameterization {
     public:
-        CovarianceParameterization() : loadedVersion_(-1),bits_{{{0}}}  
+        static int index(int i, int j) {if(i>=j) return j+i*(i+1)/2; else return i+j*(j+1)/2 ; }
+        struct CompressionSchema {
+             CompressionSchema() : elements{CompressionElement()} {}
+             CompressionElement elements[15];
+             CompressionElement & operator()(int i,int j) {return elements[index(i,j)];}
+             const CompressionElement & operator()(int i,int j) const {return elements[index(i,j)];}
+        };
+        CovarianceParameterization() : loadedVersion_(-1) 
         {
           std::cout << "Init " <<  loadedVersion_ << " " << this << std::endl;
         }
@@ -13,12 +36,13 @@ class CovarianceParameterization {
         int loadedVersion() const {return loadedVersion_; }
         void load(int version);
         float  meanValue(int i,int j,int sign,float pt, float eta, int nHits,int pixelHits,  float cii=1.,float cjj=1.) const ;
-        float  packed(float value,int quality, int i,int j,float pt, float eta, int nHits,int pixelHits,  float cii=1.,float cjj=1.) const;
+        float  pack(float value,int schema, int i,int j,float pt, float eta, int nHits,int pixelHits,  float cii=1.,float cjj=1.) const;
+        float  unpack(uint16_t packed,int schema, int i,int j,float pt, float eta, int nHits,int pixelHits,  float cii=1.,float cjj=1.) const;
     private:
         void readFile( TFile &);
         void  addTheHistogram(std::vector<TH3D *> * HistoVector, std::string StringToAddInTheName, int i, int j, TFile & fileToRead);
         int loadedVersion_;
-        int bits_[5][5][10];
+        std::vector<CompressionSchema> schemas; 
         std::vector<TH3D *>  cov_elements_pixelHit;
         std::vector<TH3D *>  cov_elements_noPixelHit;
 };

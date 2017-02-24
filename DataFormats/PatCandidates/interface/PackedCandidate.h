@@ -2,6 +2,7 @@
 #define __DataFormats_PatCandidates_PackedCandidate_h__
 
 #include <atomic>
+#include <mutex>
 #include "DataFormats/Candidate/interface/Candidate.h"
 #include "DataFormats/Candidate/interface/CandidateFwd.h"
 #include "DataFormats/Common/interface/RefVector.h"
@@ -359,12 +360,13 @@ namespace pat {
     virtual void setTrackProperties( const reco::Track & tk, const reco::Track::CovarianceMatrix & covariance,int quality,int covarianceVersion = 100) {
 //      std::cout << "track pt " << tk.pt() << std::endl;
       covarianceVersion_ = covarianceVersion;
+      covarianceSchema_ = quality;
       m_ = covariance;
       normalizedChi2_ = tk.normalizedChi2();
       //
       setHits(tk); //tk.hitPattern().numberOfValidPixelHits(),tk.hitPattern().numberOfValidHits());
       packBoth();
-      packCovariance(quality,false); //TODO: check if these 2 lines make sense as the m_ is protected behind the Track atomic pointer...
+      packCovariance(false); //TODO: check if these 2 lines make sense as the m_ is protected behind the Track atomic pointer...
       //unpackTrk();         // 
     }
 
@@ -553,16 +555,16 @@ namespace pat {
     struct PackedCovariance {
         PackedCovariance(): dxydxy(0),dxydz(0),dzdz(0),dlambdadz(0),dphidxy(0),dptdpt(0),detadeta(0),dphidphi(0) {}
         //3D IP covariance
-        float dxydxy;
-        float dxydz;
-        float dzdz;
+        uint16_t dxydxy;
+        uint16_t dxydz;
+        uint16_t dzdz;
         //other IP relevant elements
-        float dlambdadz;
-        float dphidxy;
+        uint16_t dlambdadz;
+        uint16_t dphidxy;
         //other diag elements
-        float dptdpt;
-        float detadeta;
-        float dphidphi;
+        uint16_t dptdpt;
+        uint16_t detadeta;
+        uint16_t dphidphi;
     };
 
   protected:
@@ -576,8 +578,8 @@ namespace pat {
     void unpack() const ;
     void packVtx(bool unpackAfterwards=true) ;
     void unpackVtx() const ;
-    void packCovariance(int quality,bool unpackAfterwards=true) ;
-    void unpackParameterizedCovariance() const;
+    void packCovariance(bool unpackAfterwards=true) ;
+    void unpackCovariance() const;
     void maybeUnpackBoth() const { if (!p4c_) unpack(); if (!vertex_) unpackVtx(); }
     void maybeUnpackTrack() const { if (!track_) unpackTrk(); }
     void packBoth() { pack(false); packVtx(false); delete p4_.exchange(nullptr); delete p4c_.exchange(nullptr); delete vertex_.exchange(nullptr); unpack(); unpackVtx(); } // do it this way, so that we don't loose precision on the angles before computing dxy,dz
@@ -608,22 +610,17 @@ namespace pat {
     
     /// track quality information
     uint8_t normalizedChi2_; 
+    uint8_t covarianceSchema_;
     int covarianceVersion_;
-    static CovarianceParameterization covarianceParameterization_;
+    CMS_THREAD_SAFE static CovarianceParameterization covarianceParameterization_;
     //static std::atomic<CovarianceParameterization*> covarianceParameterization_;
+    mutable std::once_flag covariance_load_flag;
     const CovarianceParameterization & covarianceParameterization() const {
-/*        if(covarianceParameterization_.load()==0) {
-          std::cout << "New ! " << std::endl;
-           covarianceParameterization_.store(new CovarianceParameterization()); 
-        }
-        if(covarianceParameterization_.load()->loadedVersion() != covarianceVersion_)
-        {
-          covarianceParameterization_.load()->load(covarianceVersion_); 
-        }
-        return  *(covarianceParameterization_.load());*/
+	std::call_once(covariance_load_flag,[](int v) { covarianceParameterization_.load(v); } ,covarianceVersion_);
         if(covarianceParameterization_.loadedVersion() != covarianceVersion_)
         {
-          covarianceParameterization_.load(covarianceVersion_); 
+          std::cout << "Attempting to load multiple covariance version in same process. This is not supported." << std::endl;
+	  abort();
         }
         return  covarianceParameterization_;
     }

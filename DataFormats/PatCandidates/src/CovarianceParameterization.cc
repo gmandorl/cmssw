@@ -1,110 +1,104 @@
 #include "DataFormats/PatCandidates/interface/CovarianceParameterization.h"
-//nclude "DataFormats/PatCandidates/interface/liblogintpack.h"
+#include "DataFormats/PatCandidates/interface/liblogintpack.h"
 #include "DataFormats/PatCandidates/interface/libminifloat.h"
 #include "FWCore/ParameterSet/interface/FileInPath.h"
 #include <boost/format.hpp>
 #include <iostream>
+uint16_t CompressionElement::pack(float value, float ref) const
+{
+    float toCompress=0;
+    switch(target) {
+        case(absoluteValue):
+          toCompress=value;
+          break;
+        case(ratioToRef):
+          toCompress=value/ref;
+          break;
+        case(differenceToRef):
+          toCompress=value-ref;
+          break;
+    }
+    switch(method) {
+        case(float16):
+          return MiniFloatConverter::float32to16(toCompress);
+          break;
+        case(reduceMantissa):
+          return MiniFloatConverter::reduceMantissaToNbits(toCompress,params[0]);
+          break;
+        case(zero):
+          return 0;
+          break;
+          //return  pack16log(toCompress,params[0],params[1],params[2]);
+        case(tanLogPack):
+          return 0;
+          break;
+        case(logPack):
+          int16_t r=logintpack::pack16log(toCompress,params[0],params[1],params[2]);
+          return * reinterpret_cast<uint16_t *>(&r); //logintpack::pack16log(toCompress,params[0],params[1],params[2]));
+          break;
+      
+    }
+  return 0;
+}
+float CompressionElement::unpack(uint16_t packed, float ref) const
+{
+    float unpacked=0;
+    switch(method) {
+        case(float16):
+          unpacked= MiniFloatConverter::float16to32(packed);
+          break;
+        case(reduceMantissa):
+          unpacked=packed;
+          break;
+        case(logPack):
+          unpacked=logintpack::unpack16log(* reinterpret_cast<int16_t *>(&packed),params[0],params[1],params[2]);
+          break;
+        case(zero):
+        case(tanLogPack):
+          unpacked=1;
+    }
+    switch(target) {
+        case(absoluteValue):
+          return unpacked;
+        case(ratioToRef):
+          return unpacked*ref;
+        case(differenceToRef):
+          return unpacked+ref;
+    }
+
+    return ref;
+  
+}
+
+
 void CovarianceParameterization::load(int version)
 {
  edm::FileInPath fip((boost::format("DataFormats/PatCandidates/data/CovarianceParameterization_version%d.root") % version).str());
  std::cerr << "Hello there, I'm going to load " <<  fip.fullPath().c_str() << std::endl;
- TFile fileToRead(fip.fullPath().c_str());
+ TFile fileToRead(fip.fullPath().c_str()); 
 //Read files from here fip.fullPath().c_str();
  if(fileToRead.IsOpen())  {
      readFile(fileToRead);
      fileToRead.Close();
+
+     //this can be read from file
+     CompressionSchema schema0;
+     schema0(0,0)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,{-3,4,4});
+     schema0(1,1)=schema0(0,0);
+/*     schema1[index(2,2)]=schema1[index(0,0)];
+     schema1[index(3,3)]=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,3,{-3,4,4096});
+     schema1[index(3,4)]=schema1[index(3,3)];
+     schema1[index(4,4)]=schema1[index(3,3)];
+     //FIXME: check indices is it 1,3   2,4 or 1,4  2,3 ?
+     schema1[index(1,3)]=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,3,{-3,4,4});
+     schema1[index(2,4)]=schema1[index(1,3)];*/
+
+
+     schemas.push_back(schema0); 
  //Those can be loaded from the root file too in priciple
  //    for(int i=0;i<150;i++) bits_[i]=0;
 
 
-     bits_[0][0][0]=3;
-     bits_[1][1][0]=3;
-     bits_[2][2][0]=3;
-     bits_[3][3][0]=12;
-     bits_[4][4][0]=12;
-     bits_[3][4][0]=12;
-     bits_[1][4][0]=3;
-     bits_[2][3][0]=3;
-
-
-
-     bits_[0][0][1]=2;
-     bits_[1][1][1]=2;
-     bits_[2][2][1]=2;
-     bits_[3][3][1]=12;
-     bits_[4][4][1]=12;
-     bits_[3][4][1]=12;
-     bits_[1][4][1]=3;
-     bits_[2][3][1]=3;
-
-
-
-     bits_[0][0][2]=2;
-     bits_[1][1][2]=2;
-     bits_[2][2][2]=2;
-     bits_[3][3][2]=12;
-     bits_[4][4][2]=12;
-     bits_[3][4][2]=12;
-     bits_[1][4][2]=2;
-     bits_[2][3][2]=2;
-
-
-
-     bits_[0][0][3]=2;
-     bits_[1][1][3]=2;
-     bits_[2][2][3]=2;
-     bits_[3][3][3]=10;
-     bits_[4][4][3]=10;
-     bits_[3][4][3]=10;
-     bits_[1][4][3]=5;
-     bits_[2][3][3]=5;
-
-
-
-     bits_[0][0][4]=2;
-     bits_[1][1][4]=2;
-     bits_[2][2][4]=2;
-     bits_[3][3][4]=10;
-     bits_[4][4][4]=10;
-     bits_[3][4][4]=10;
-     bits_[1][4][4]=4;
-     bits_[2][3][4]=4;
-
-
-
-
-     bits_[3][3][5]=6;
-     bits_[4][4][5]=6;
-     bits_[3][4][5]=6;
-     bits_[1][4][5]=2;
-     bits_[2][3][5]=2;
-
-
-     bits_[3][3][6]=4;
-     bits_[4][4][6]=4;
-     bits_[3][4][6]=4;
-     bits_[1][4][6]=2;
-     bits_[2][3][6]=2;
-
-
-     bits_[3][3][7]=6;
-     bits_[4][4][7]=6;
-     bits_[3][4][7]=6;
-     bits_[1][4][7]=0;
-     bits_[2][3][7]=0;
-
-
-/*
- *
-0 12  3 3
-1 12  2 3
-2 12  2 2
-3 10  2 5
-4 10  2 4
-5 6 0 2
-6 4 0 2
-7 6 0 0
- */ 
     loadedVersion_=version; 
      std::cerr << "Loaded version " << loadedVersion_ << " " << version << " " << loadedVersion() << std::endl;
  } else {loadedVersion_=-1;}
@@ -179,14 +173,14 @@ float CovarianceParameterization::meanValue(int i,int j,int sign,float pt, float
 
 }
 
-float CovarianceParameterization::packed(float value, int quality, int i,int j,float pt, float eta, int nHits,int pixelHits,  float cii,float cjj) const {
+float CovarianceParameterization::pack(float value, int schema, int i,int j,float pt, float eta, int nHits,int pixelHits,  float cii,float cjj) const {
     if(i>j) std::swap(i,j);
-    float ratio=value/meanValue(i,j,std::copysign(1.,value),pt,eta,nHits,pixelHits,cii,cjj);
-    int bits=bits_[i][j][quality];
-//    std::cout << "bits " << bits << " " << i << " " << j << " " << quality << std::endl;
-    if(bits==0) return 0;
-    if(bits==1) return std::copysign(1.,value);
-    return MiniFloatConverter::reduceMantissaToNbits(ratio,bits);
-
+    float ref=meanValue(i,j,value,pt,eta,nHits,pixelHits,cii,cjj);
+    return schemas[schema](i,j).pack(value,ref);
 }
-
+float CovarianceParameterization::unpack(uint16_t packed, int schema, int i,int j,float pt, float eta, int nHits,int pixelHits,  float cii,float cjj) const {
+    if(i>j) std::swap(i,j);
+    float ref=meanValue(i,j,packed,pt,eta,nHits,pixelHits,cii,cjj);
+    return schemas[schema](i,j).unpack(packed,ref);
+ 
+}
