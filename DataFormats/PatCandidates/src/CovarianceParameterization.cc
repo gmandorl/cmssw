@@ -80,20 +80,26 @@ void CovarianceParameterization::load(int version)
  if(fileToRead.IsOpen())  {
      readFile(fileToRead);
      fileToRead.Close();
-
      //this can be read from file
      CompressionSchema schema0;
-     schema0(0,0)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,{-3,4,4});
+     schema0(0,0)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,{-3,3,4});
      schema0(1,1)=schema0(0,0);
      schema0(2,2)=schema0(0,0);
-     schema0(3,3)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,{-3,4,4096});
+     schema0(3,3)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,{-3,4,1024});
      schema0(4,4)=schema0(3,3);
      schema0(3,4)=schema0(3,3);
-     schema0(2,3)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,{-3,4,64});
+     schema0(2,3)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,{-3,4,32});
      schema0(1,4)=schema0(2,3);
      
+     CompressionSchema schema1;
+     schema1(3,3)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,{-3,4,16});
+     schema1(4,4)=schema1(3,3);
+     schema1(3,4)=schema1(3,3);
+     schema1(2,3)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,{-3,4,8});
+     schema1(1,4)=schema1(2,3);
+     
      schemas.push_back(schema0); 
-     schemas.push_back(schema0); //FIXME: schema 0 and 1 are identical this way 
+     schemas.push_back(schema1);
 
     loadedVersion_=version; 
      std::cerr << "Loaded version " << loadedVersion_ << " " << version << " " << loadedVersion() << std::endl;
