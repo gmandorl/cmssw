@@ -8,7 +8,7 @@ uint16_t CompressionElement::pack(float value, float ref) const
 {
     float toCompress=0;
     switch(target) {
-        case(absoluteValue):
+        case(realValue):
           toCompress=value;
           break;
         case(ratioToRef):
@@ -27,6 +27,9 @@ uint16_t CompressionElement::pack(float value, float ref) const
           break;
         case(zero):
           return 0;
+          break;
+        case(one):
+          return 1.0;
           break;
           //return  pack16log(toCompress,params[0],params[1],params[2]);
         case(tanLogPack):
@@ -54,11 +57,14 @@ float CompressionElement::unpack(uint16_t packed, float ref) const
           unpacked=logintpack::unpack16log(* reinterpret_cast<int16_t *>(&packed),params[0],params[1],params[2]);
           break;
         case(zero):
+          unpacked=0;
+          break;
+        case(one):
         case(tanLogPack):
           unpacked=1;
     }
     switch(target) {
-        case(absoluteValue):
+        case(realValue):
           return unpacked;
         case(ratioToRef):
           return unpacked*ref;
@@ -82,20 +88,20 @@ void CovarianceParameterization::load(int version)
      fileToRead.Close();
      //this can be read from file
      CompressionSchema schema0;
-     schema0(0,0)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,{-3,3,4});
-     schema0(1,1)=schema0(0,0);
-     schema0(2,2)=schema0(0,0);
+     schema0(0,0)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,{-2,1,4});
+     schema0(1,1)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,{-1,1,4});
+     schema0(2,2)=schema0(1,1);
      schema0(3,3)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,{-3,4,1024});
-     schema0(4,4)=schema0(3,3);
-     schema0(3,4)=schema0(3,3);
-     schema0(2,3)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,{-3,4,32});
+     schema0(3,4)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,{-8,4,1024});
+     schema0(4,4)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,{-3,4,1024});
+     schema0(2,3)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,{-1,1.5,32});
      schema0(1,4)=schema0(2,3);
      
      CompressionSchema schema1;
      schema1(3,3)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,{-3,4,16});
      schema1(4,4)=schema1(3,3);
      schema1(3,4)=schema1(3,3);
-     schema1(2,3)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,{-3,4,8});
+     schema1(2,3)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,{-3,4,4});
      schema1(1,4)=schema1(2,3);
      
      schemas.push_back(schema0); 
@@ -178,12 +184,13 @@ float CovarianceParameterization::meanValue(int i,int j,int sign,float pt, float
 float CovarianceParameterization::pack(float value, int schema, int i,int j,float pt, float eta, int nHits,int pixelHits,  float cii,float cjj) const {
     if(i>j) std::swap(i,j);
     float ref=meanValue(i,j,1.,pt,eta,nHits,pixelHits,cii,cjj);
-    std::cout << i << " , " << j << " v: " << value << " r: " << ref << " " << schemas[schema](i,j).pack(value,ref)<< std::endl;
+    std::cout << "pack: " << pt << " " << eta << " " << nHits << " "  << i << " , " << j << " v: " << value << " r: " << ref << " " << schemas[schema](i,j).pack(value,ref)<< std::endl;
     return schemas[schema](i,j).pack(value,ref);
 }
 float CovarianceParameterization::unpack(uint16_t packed, int schema, int i,int j,float pt, float eta, int nHits,int pixelHits,  float cii,float cjj) const {
     if(i>j) std::swap(i,j);
     float ref=meanValue(i,j,1.,pt,eta,nHits,pixelHits,cii,cjj);
+    std::cout<< "unPack: " << pt << " " << eta << " " << nHits << " "  << i << " , " << j << " v: " << schemas[schema](i,j).unpack(packed,ref) << " r: " << ref << " " << packed << std::endl;
     return schemas[schema](i,j).unpack(packed,ref);
  
 }

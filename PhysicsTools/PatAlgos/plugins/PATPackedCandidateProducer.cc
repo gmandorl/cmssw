@@ -43,10 +43,15 @@ namespace pat {
             bool candsOrdering(pat::PackedCandidate i,pat::PackedCandidate j) const {
                 if (std::abs(i.charge()) == std::abs(j.charge())) {
                     if(i.charge()!=0){
-                        if(i.pt() > 1. and j.pt() <= 1. ) return true;
+                        if(i.hasTrackDetails() and ! j.hasTrackDetails() ) return true;
+                        if(! i.hasTrackDetails() and  j.hasTrackDetails() ) return false;
+                        if(i.covarianceVersion() >  j.covarianceVersion() ) return true;
+                        if(i.covarianceVersion() <  j.covarianceVersion() ) return false;
+
+/*                        if(i.pt() > 1. and j.pt() <= 1. ) return true;
                         if(i.pt() <= 1. and j.pt() > 1. ) return false;
                         if(i.pt() > 0.5 and j.pt() <= 0.5 ) return true;
-                        if(i.pt() <= 0.5 and j.pt() > 0.5 ) return false;
+                        if(i.pt() <= 0.5 and j.pt() > 0.5 ) return false;*/
                   }
                    if(i.vertexRef() == j.vertexRef()) 
                       return i.eta() > j.eta();

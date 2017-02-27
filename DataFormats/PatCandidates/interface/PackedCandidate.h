@@ -445,6 +445,9 @@ namespace pat {
       else
         return nullptr;
     }
+    /// Return true if a bestTrack can be extracted from this Candidate
+    bool hasTrackDetails() {return  (packedHits_!=0 || packedLayers_ !=0); }
+      
 
     /// true if the track had the highPurity quality bit
     bool trackHighPurity() const { return (qualityFlags_ & trackHighPurityMask)>>trackHighPurityShift; }
@@ -579,7 +582,7 @@ namespace pat {
     void packVtx(bool unpackAfterwards=true) ;
     void unpackVtx() const ;
     void unpackCovarianceElement(uint16_t packed, int i,int j) const {
-      m_(i,j)= covarianceParameterization().unpack(m_(i,j),covarianceVersion_>>16,i,j,pt(),eta(),numberOfHits(), numberOfPixelHits());
+      m_(i,j)= covarianceParameterization().unpack(packed,covarianceVersion_>>16,i,j,pt(),eta(),numberOfHits(), numberOfPixelHits());
     }
     uint16_t packCovarianceElement(int i,int j) const {
       return covarianceParameterization().pack(m_(i,j),covarianceVersion_>>16,i,j,pt(),eta(),numberOfHits(), numberOfPixelHits());
