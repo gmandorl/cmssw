@@ -9,9 +9,10 @@ class CompressionElement {
       enum Method {float16=0,reduceMantissa=1,logPack=2,tanLogPack=3,zero=4,one=5};
       enum Target {realValue=0,ratioToRef=1,differenceToRef=2};
       CompressionElement():method(zero),target(realValue){}
-      CompressionElement(Method m, Target t, std::initializer_list<float> p): method(m),target(t),params(p){}
+      CompressionElement(Method m, Target t, int bitsUsed, std::initializer_list<float> p): method(m),target(t),bits(bitsUsed),params(p){}
       Method method;
       Target target;
+      int bits;
       std::vector<float> params;
       uint16_t pack(float value, float ref=0.) const ;
       float unpack(uint16_t packed, float ref=0.) const;
@@ -42,6 +43,7 @@ class CovarianceParameterization {
         void readFile( TFile &);
         void  addTheHistogram(std::vector<TH3D *> * HistoVector, std::string StringToAddInTheName, int i, int j, TFile & fileToRead);
         int loadedVersion_;
+        void makeSchema(int bitIP_highPt, int bitDiag_highPt, int bitExtra_highPt, int bitIP_lowPt, int bitDiag_lowPt, int bitExtra_lowPt);
         std::vector<CompressionSchema> schemas; 
         std::vector<TH3D *>  cov_elements_pixelHit;
         std::vector<TH3D *>  cov_elements_noPixelHit;
