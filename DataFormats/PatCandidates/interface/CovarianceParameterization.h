@@ -6,9 +6,9 @@
 
 class CompressionElement {
     public:
-      enum Method {float16=0,reduceMantissa=1,logPack=2,tanLogPack=3,zero=4};
-      enum Target {absoluteValue=0,ratioToRef=1,differenceToRef=2};
-      CompressionElement():method(zero),target(absoluteValue){}
+      enum Method {float16=0,reduceMantissa=1,logPack=2,tanLogPack=3,zero=4,one=5};
+      enum Target {realValue=0,ratioToRef=1,differenceToRef=2};
+      CompressionElement():method(zero),target(realValue){}
       CompressionElement(Method m, Target t, std::initializer_list<float> p): method(m),target(t),params(p){}
       Method method;
       Target target;

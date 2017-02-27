@@ -98,10 +98,10 @@ void pat::PackedCandidate::packCovariance(bool unpackAfterwards){
 }
 
 void pat::PackedCandidate::unpackCovariance() const {
-    std::cout << "Unpack called!" << std::endl; 
     const CovarianceParameterization & p=covarianceParameterization();
     if(p.isValid()) 
     {
+      std::cout << "Input data " <<  packedCovariance_.dptdpt << " " << packedCovariance_.dxydxy << " " << packedCovariance_.dzdz << " " << packedCovariance_.dxydz << std::endl;
       unpackCovarianceElement(packedCovariance_.dptdpt,0,0);
       unpackCovarianceElement(packedCovariance_.detadeta,1,1);
       unpackCovarianceElement(packedCovariance_.dphidphi,2,2);
@@ -159,6 +159,10 @@ float pat::PackedCandidate::dz(const Point &p) const {
 
 void pat::PackedCandidate::unpackTrk() const {
     maybeUnpackBoth();
+    for(int i=0;i<5;i++)
+      for(int j=0;j<5;j++){
+          m_(i,j)=0;
+    }
     unpackCovariance();
     math::RhoEtaPhiVector p3(p4_.load()->pt(),p4_.load()->eta(),phiAtVtx());
     int numberOfStripLayers = stripLayersWithMeasurement(), numberOfPixelLayers = pixelLayersWithMeasurement();
