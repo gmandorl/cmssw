@@ -4,6 +4,10 @@
 #include "FWCore/ParameterSet/interface/FileInPath.h"
 #include <boost/format.hpp>
 #include <iostream>
+#include <TParameter.h>
+#include <TVector.h>
+#include <TFolder.h>
+
 uint16_t CompressionElement::pack(float value, float ref) const
 {
     float toCompress=0;
@@ -78,63 +82,29 @@ float CompressionElement::unpack(uint16_t packed, float ref) const
 
 
 
-void CovarianceParameterization::makeSchema(int bitIP_highPt, int bitDiag_highPt, int bitExtra_highPt, int bitIP_lowPt, int bitDiag_lowPt, int bitExtra_lowPt) {
-    
-     CompressionSchema schemaToAdd_highPt;
-     schemaToAdd_highPt(0,0)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,bitDiag_highPt,{-2,1});
-     schemaToAdd_highPt(1,1)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,bitDiag_highPt,{-1,1});
-     schemaToAdd_highPt(2,2)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,bitDiag_highPt,{-1,1});
-     schemaToAdd_highPt(3,3)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,bitIP_highPt,{-3,4});
-     schemaToAdd_highPt(3,4)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,bitIP_highPt,{-8,4});
-     schemaToAdd_highPt(4,4)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,bitIP_highPt,{-3,4});
-     schemaToAdd_highPt(2,3)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,bitExtra_highPt,{-1,1.5});
-     schemaToAdd_highPt(1,4)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,bitExtra_highPt,{-1,1.5});
-    
-     schemas.push_back(schemaToAdd_highPt);
-    
-    
-     CompressionSchema schemaToAdd_lowPt;
-     if (bitDiag_lowPt > 1) {
-     schemaToAdd_lowPt(0,0)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,bitDiag_lowPt,{-2,2});
-     schemaToAdd_lowPt(1,1)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,bitDiag_lowPt,{-4,2});
-     schemaToAdd_lowPt(2,2)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,bitDiag_lowPt,{-2,2});
-     }
-     else {
-     schemaToAdd_lowPt(0,0)=CompressionElement(CompressionElement::one,CompressionElement::ratioToRef,0,{});
-     schemaToAdd_lowPt(1,1)=CompressionElement(CompressionElement::one,CompressionElement::ratioToRef,0,{});
-     schemaToAdd_lowPt(2,2)=CompressionElement(CompressionElement::one,CompressionElement::ratioToRef,0,{}); 
-     }
-     schemaToAdd_lowPt(3,3)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,bitIP_lowPt,{-3,4});
-     schemaToAdd_lowPt(3,4)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,bitIP_lowPt,{-8,4});
-     schemaToAdd_lowPt(4,4)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,bitIP_lowPt,{-3,4});
-     schemaToAdd_lowPt(2,3)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,bitExtra_lowPt,{-2,1});
-     schemaToAdd_lowPt(1,4)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,bitExtra_lowPt,{-2,2});
-    
-     schemas.push_back(schemaToAdd_lowPt);
-         
-}
 
 
 
 void CovarianceParameterization::load(int version)
 {
- edm::FileInPath fip((boost::format("DataFormats/PatCandidates/data/CovarianceParameterization_version%d.root") % version).str());
+ edm::FileInPath fip("/scratch/mandorli/CMSSW_8_0_21/src/plot/parametrizzazioni_pixel_noPixel_mantissaVariabile/ROOT/FinalFileWithParametrization.root");
+//  edm::FileInPath fip((boost::format("DataFormats/PatCandidates/data/CovarianceParameterization_version%d.root") % version).str());
  std::cerr << "Hello there, I'm going to load " <<  fip.fullPath().c_str() << std::endl;
  TFile fileToRead(fip.fullPath().c_str()); 
 //Read files from here fip.fullPath().c_str();
  if(fileToRead.IsOpen())  {
      readFile(fileToRead);
-     fileToRead.Close();
+
      //this can be read from file
-     CompressionSchema schema0;
-     schema0(0,0)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,4,{-2,1});
-     schema0(1,1)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,4,{-1,1});
-     schema0(2,2)=schema0(1,1);
-     schema0(3,3)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,1024,{-3,4});
-     schema0(3,4)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,1024,{-8,4});
-     schema0(4,4)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,1024,{-3,4});
-     schema0(2,3)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,32,{-1,1.5});
-     schema0(1,4)=schema0(2,3);
+//      CompressionSchema schema0;
+//      schema0(0,0)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,4,{-2,1});
+//      schema0(1,1)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,4,{-1,1});
+//      schema0(2,2)=schema0(1,1);
+//      schema0(3,3)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,1024,{-3,4});
+//      schema0(3,4)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,1024,{-8,4});
+//      schema0(4,4)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,1024,{-3,4});
+//      schema0(2,3)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,32,{-1,1.5});
+//      schema0(1,4)=schema0(2,3);
      
      CompressionSchema schema1;
      schema1(3,3)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,16,{-3,4});
@@ -143,16 +113,43 @@ void CovarianceParameterization::load(int version)
      schema1(2,3)=CompressionElement(CompressionElement::logPack,CompressionElement::ratioToRef,4,{-3,4});
      schema1(1,4)=schema1(2,3);
      
-     schemas.push_back(schema0); 
-     schemas.push_back(schema1);
-    
-     makeSchema(1024, 4, 32, 16, 0, 4);  //schema 1
-     makeSchema(2048, 4, 32, 16, 0, 4);  //schema 2
-     makeSchema(1024, 4, 16, 64, 2, 8);  //schema 3
-     makeSchema(1024, 4, 16, 32, 2, 4);  //schema 4
 
-    
-    
+// { (*((TVector)fileToRead.Get("schemas/1/00/param"))) [0], (*((TVector)fileToRead.Get("schemas/1/00/param"))) [1] }
+     
+     
+//      TFolder * fold =(TFolder *) _file0->Get("schemas")
+//      GetListOfFolders()
+     
+     std::string ListOfFolderName [10] = {"0","1","2","3","4","5","6","7","8","9"} ;
+     std::string s [10] = {"0","1","2","3","4"} ;
+
+     for (int folderNumber = 0; folderNumber < 6 ; folderNumber++) {
+        CompressionSchema schema; 
+         
+        std::string folder = "schemas/";
+        folder = folder + ListOfFolderName[folderNumber] + "/";
+        
+        for (int i = 0; i < 5; i++) {
+            for (int j = i; j < 5; j++) {        //FILLING ONLY THE SCHEMA OF SOME ELEMENTS
+                folder = folder + s[i] + s[j];
+                std::string methodString = folder + "/method";
+                std::string targetString = folder + "/target";
+                std::string bitString = folder + "/bit";
+
+                schema(i,j)=CompressionElement((CompressionElement::Method) ((TParameter<int>*) fileToRead.Get(methodString.c_str()))->GetVal(),(CompressionElement::Target) ((TParameter<int>*) fileToRead.Get(targetString.c_str()))->GetVal(), (int) ((TParameter<int>*) fileToRead.Get(bitString.c_str()))->GetVal(), {-2,1});
+        
+                
+            }
+        }
+        
+     schemas.push_back(schema); 
+     }
+//      schemas.push_back(schema0); 
+     schemas.push_back(schema1);
+     
+     
+    fileToRead.Close();
+
     loadedVersion_=version; 
      std::cerr << "Loaded version " << loadedVersion_ << " " << version << " " << loadedVersion() << std::endl;
  } else {loadedVersion_=-1;}
